@@ -1,5 +1,6 @@
 package com.trebo;
 import java.sql.*;
+import java.util.Vector;
 
 public class Database {
     private String address, database, username, password;
@@ -20,7 +21,7 @@ public class Database {
     
     //functions:
     public int addTreningsøkt(long Tidspunkt, int Varighet, int Form, short Prestasjon, Integer Temperatur, String Værtype) throws SQLException {
-        return AddTreningsøkt(Tidspunkt, Varighet, Form, Prestasjon, Temperatur, Værtype, null, null);
+        return addTreningsøkt(Tidspunkt, Varighet, Form, Prestasjon, Temperatur, Værtype, null, null);
     }
     public int addTreningsøkt(long Tidspunkt, int Varighet, int Form, short Prestasjon, Integer Temperatur, String Værtype, Integer MålDenne, Integer MålNeste) throws SQLException {//INSERT, UPDATE or DELETE
         assert Værtype.length() <= 20;
@@ -157,6 +158,77 @@ public class Database {
         return out;
     }
     
+    public class GruppelisteElement {//totally not a struct
+        public String label;
+        public boolean isØvelse = false;
+        public int ID;
+    }
+    public Vector<GruppelisteElement> getGruppeliste(GruppelisteElement gruppe) throws SQLException {//inkluderer øvelser som er bed i gruppen
+        Vector<GruppelisteElement> outVec = new Vector<GruppelisteElement>();
+        if (gruppe.isØvelse){
+            return outVec;
+        }
+        
+        PreparedStatement pstmt = this.con.prepareStatement(
+                "SELECT *" +
+                        "FROM Gruppe " +
+                        "WHERE GruppeID in (SELECT UndergruppeID FROM GruppeSubgruppe WHERE GruppeID = ?)");
+        
+        pstmt.setInt(1, gruppe.ID);
+        
+        ResultSet out;
+        try {
+            out = pstmt.executeQuery();
+        } finally {
+            pstmt.close();
+        }
+        
+        GruppelisteElement e;
+        while (out.next()){
+            e = new GruppelisteElement();
+            e.label = out.getString("Navn");
+            e.isØvelse = false;
+            e.ID    = out.getInt("GruppeID");
+            outVec.add(e);
+        }
+    
+        for (GruppelisteElement es : getØvelserInGruppe(gruppe)){
+            outVec.add(es);
+        }
+         
+        return outVec;
+    }
+    public Vector<GruppelisteElement> getØvelserInGruppe(GruppelisteElement gruppe) throws SQLException {//kun øvelsene i gruppen
+        Vector<GruppelisteElement> outVec = new Vector<GruppelisteElement>();
+        if (gruppe.isØvelse){
+            return outVec;
+        }
+        
+        PreparedStatement pstmt = this.con.prepareStatement(
+                "SELECT *" +
+                        "FROM Øvelse " +
+                        "WHERE ØvelseID in (SELECT ØvelseID FROM ØvelseGruppe WHERE GruppeID = ?)");
+        
+        pstmt.setInt(1, gruppe.ID);
+        
+        ResultSet out;
+        try {
+            out = pstmt.executeQuery();
+        } finally {
+            pstmt.close();
+        }
+    
+        GruppelisteElement e;
+        while (out.next()){
+            e = new GruppelisteElement();
+            e.label = out.getString("Navn");
+            e.isØvelse = true;
+            e.ID = out.getInt("ØvelseID");
+            outVec.add(e);
+        }
+        
+        return outVec;
+    }
     
     public void addNotat(int treningsøktID, String notat) throws SQLException {//INSERT, UPDATE or DELETE
         assert notat.length() <= 600;
