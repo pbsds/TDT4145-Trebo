@@ -1,29 +1,36 @@
 package com.trebo;
 import java.sql.*;
 
+
 public class Database {
-    public Database(string address, string username, string password){
-        database =;
+    private String address, database, username, password;
+
+    public Database(String address, String database, String username, String password){
+        this.address = address;
+        this.username = username;
+        this.database = database;
+        this.password = password;
     }
-    public static void UpdateCarNum(int carNo, int empNo) throws SQLException {
+    public void template_update() throws SQLException{
         Connection con = null;
         PreparedStatement pstmt = null;
 
         try {
-            con = DriverManager.getConnection(
-                    "jdbc:default:connection");
+            con = DriverManager.getConnection(this.address, this.username, this.password);
 
             pstmt = con.prepareStatement(
                     "UPDATE EMPLOYEES " +
                             "SET CAR_NUMBER = ? " +
                             "WHERE EMPLOYEE_NUMBER = ?");
 
-            pstmt.setInt(1, carNo);
-            pstmt.setInt(2, empNo);
-            pstmt.executeUpdate();
+            pstmt.setInt(1, 33);
+            pstmt.setInt(2, 44);
+
+            //pstmt.executeUpdate();
         }
         finally {
             if (pstmt != null) pstmt.close();
         }
     }
+
 }
