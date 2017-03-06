@@ -19,10 +19,10 @@ public class Database {
     }
     
     //functions:
-    public int AddTreningsøkt(long Tidspunkt, int Varighet, int Form, short Prestasjon, Integer Temperatur, String Værtype) throws SQLException {
+    public int addTreningsøkt(long Tidspunkt, int Varighet, int Form, short Prestasjon, Integer Temperatur, String Værtype) throws SQLException {
         return AddTreningsøkt(Tidspunkt, Varighet, Form, Prestasjon, Temperatur, Værtype, null, null);
     }
-    public int AddTreningsøkt(long Tidspunkt, int Varighet, int Form, short Prestasjon, Integer Temperatur, String Værtype, Integer MålDenne, Integer MålNeste) throws SQLException {//INSERT, UPDATE or DELETE
+    public int addTreningsøkt(long Tidspunkt, int Varighet, int Form, short Prestasjon, Integer Temperatur, String Værtype, Integer MålDenne, Integer MålNeste) throws SQLException {//INSERT, UPDATE or DELETE
         assert Værtype.length() <= 20;
     
         PreparedStatement pstmt = this.con.prepareStatement(
@@ -51,8 +51,7 @@ public class Database {
         return out;
     }
     
-    
-    public void      AddGeodata(int TreningsøktID, long Tid, short puls, double lengdegrad, double breddegrad, short moh) throws SQLException {//INSERT, UPDATE or DELETE
+    public void      addGeodata(int TreningsøktID, long Tid, short puls, double lengdegrad, double breddegrad, short moh) throws SQLException {//INSERT, UPDATE or DELETE
         PreparedStatement pstmt = this.con.prepareStatement(
                 "INSERT INTO Geodata " +
                         "(TreningsøktID, Tid, Puls, Lengdegrad, Breddegrad, Moh) " +
@@ -71,7 +70,7 @@ public class Database {
             pstmt.close();
         }
     }
-    public ResultSet GetGeodata(int TreningsøktID) throws SQLException {
+    public ResultSet getGeodata(int TreningsøktID) throws SQLException {
         PreparedStatement pstmt = this.con.prepareStatement(
                 "SELECT * " +
                         "FROM Geodata " +
@@ -90,7 +89,7 @@ public class Database {
         return out;
     }
     
-    public void AddØvingsgjennomføring(Integer repetisjoner, Integer sett, Integer lengde, int TreningsøktID, int ØvelseID) throws SQLException {//INSERT, UPDATE or DELETE
+    public void addØvingsgjennomføring(Integer repetisjoner, Integer sett, Integer lengde, int TreningsøktID, int ØvelseID) throws SQLException {//INSERT, UPDATE or DELETE
         PreparedStatement pstmt = this.con.prepareStatement(
                 "INSERT INTO Øvelsegjennomføring " +
                         "(Repetisjoner, Sett, Lengde, TreningsøktID, ØvelseID) " +
@@ -109,7 +108,7 @@ public class Database {
         }
     }
     
-    public ResultSet GetØvelse(int ØvelseID) throws SQLException {
+    public ResultSet getØvelse(int ØvelseID) throws SQLException {
         PreparedStatement pstmt = this.con.prepareStatement(
                 "SELECT * " +
                         "FROM Øvelse " +
@@ -126,7 +125,7 @@ public class Database {
         
         return out;
     }
-    public ResultSet GetAllØvelser() throws SQLException {
+    public ResultSet getAllØvelser() throws SQLException {
         PreparedStatement pstmt = this.con.prepareStatement(
                 "SELECT * " +
                         "FROM Øvelse ");
@@ -140,7 +139,7 @@ public class Database {
         
         return out;
     }
-    public ResultSet GetØvelseByName(String navn) throws SQLException {
+    public ResultSet getØvelseByName(String navn) throws SQLException {
         PreparedStatement pstmt = this.con.prepareStatement(
                 "SELECT * " +
                         "FROM Øvelse " +
@@ -159,7 +158,7 @@ public class Database {
     }
     
     
-    public void AddNotat(int treningsøktID, String notat) throws SQLException {//INSERT, UPDATE or DELETE
+    public void addNotat(int treningsøktID, String notat) throws SQLException {//INSERT, UPDATE or DELETE
         assert notat.length() <= 600;
     
         PreparedStatement pstmt = this.con.prepareStatement(

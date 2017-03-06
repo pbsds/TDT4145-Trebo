@@ -2,7 +2,7 @@ package com.trebo;
 import java.sql.SQLException;
 
 public class trebo {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception{
         System.out.println(String.format("Hello, World! %s, %s", 5, 6));
 
         /*
