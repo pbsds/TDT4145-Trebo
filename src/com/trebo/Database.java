@@ -3,55 +3,250 @@ import java.sql.*;
 
 public class Database {
     private String address, database, username, password;
-    Connection con = null;
-
-    public Database(String address, String database, String username, String password){
+    private Connection con = null;
+    public Database(String address, String database, String username, String password) {
         this.address = address;
         this.username = username;
         this.database = database;
         this.password = password;
         try {
-            con = DriverManager.getConnection(this.address, this.username, this.password);
-        }catch(SQLException e){
+            this.con = DriverManager.getConnection(this.address, this.username, this.password);
+        } catch (SQLException e) {
             System.out.println("Couldn't connect to server: " + this.address);
             System.out.println(e);
             System.exit(1);
         }
     }
-
-    public void template_update() throws SQLException{//INSERT, UPDATE or DELETE
+    
+    //functions:
+    public int AddTreningsøkt(long Tidspunkt, int Varighet, int Form, short Prestasjon, Integer Temperatur, String Værtype) throws SQLException {
+        return AddTreningsøkt(Tidspunkt, Varighet, Form, Prestasjon, Temperatur, Værtype, null, null);
+    }
+    public int AddTreningsøkt(long Tidspunkt, int Varighet, int Form, short Prestasjon, Integer Temperatur, String Værtype, Integer MålDenne, Integer MålNeste) throws SQLException {//INSERT, UPDATE or DELETE
+        assert Værtype.length() <= 20;
+    
         PreparedStatement pstmt = this.con.prepareStatement(
-                "UPDATE EMPLOYEES " +
-                        "SET CAR_NUMBER = ? " +
-                        "WHERE EMPLOYEE_NUMBER = ?");
-
-        pstmt.setInt(1, 33);
-        pstmt.setInt(2, 44);
-
+                "INSERT INTO Treningsøkt" +
+                        "(Tidspunkt, Varighet, Form, Prestasjon, Temperatur, Værtype, MålDenne, MålNeste)" +
+                        "VALUES (?,?,?,?,?,?,?,?)");
+    
+        pstmt.setLong(1, Tidspunkt);
+        pstmt.setInt(2, Varighet);
+        pstmt.setInt(3, Form);
+        pstmt.setInt(4, Prestasjon);
+        pstmt.setObject(5, Temperatur);
+        pstmt.setString(6, Værtype);
+        pstmt.setObject(7, MålDenne);
+        pstmt.setObject(8, MålNeste);
+    
+        int out = -1;
         try {
             pstmt.executeUpdate();
+            ResultSet rs = pstmt.getGeneratedKeys();
+            rs.next();
+            out = rs.getInt(1);
+        } finally {
+            pstmt.close();
         }
-        finally {
-            if (pstmt != null) pstmt.close();
+        return out;
+    }
+    
+    
+    public void      AddGeodata(int TreningsøktID, long Tid, short puls, double lengdegrad, double breddegrad, short moh) throws SQLException {//INSERT, UPDATE or DELETE
+        PreparedStatement pstmt = this.con.prepareStatement(
+                "INSERT INTO Geodata " +
+                        "(TreningsøktID, Tid, Puls, Lengdegrad, Breddegrad, Moh) " +
+                        "VALUES (?,?,?,?,?,?)");
+        
+        pstmt.setInt(1, TreningsøktID);
+        pstmt.setLong(2, Tid);
+        pstmt.setShort(3, puls);
+        pstmt.setDouble(4, lengdegrad);
+        pstmt.setDouble(5, breddegrad);
+        pstmt.setShort(6, moh);
+        
+        try {
+            pstmt.executeUpdate();
+        } finally {
+            pstmt.close();
         }
     }
-    public void template_select() throws SQLException{
+    public ResultSet GetGeodata(int TreningsøktID) throws SQLException {
         PreparedStatement pstmt = this.con.prepareStatement(
-                "UPDATE EMPLOYEES " +
-                        "SET CAR_NUMBER = ? " +
-                        "WHERE EMPLOYEE_NUMBER = ?");
-
-        pstmt.setInt(1, 1337);
-        pstmt.setInt(2, 42);
-
+                "SELECT * " +
+                        "FROM Geodata " +
+                        "WHERE TreningsøktID = ?" +
+                        "ORDER BY GeodataID ASC ");
+        
+        pstmt.setInt(1, TreningsøktID);
+        
         ResultSet out;
         try {
             out = pstmt.executeQuery();
-        }
-        finally {
+        } finally {
             pstmt.close();
         }
-
-        //out
+        
+        return out;
+    }
+    
+    public void AddØvingsgjennomføring(Integer repetisjoner, Integer sett, Integer lengde, int TreningsøktID, int ØvelseID) throws SQLException {//INSERT, UPDATE or DELETE
+        PreparedStatement pstmt = this.con.prepareStatement(
+                "INSERT INTO Øvelsegjennomføring " +
+                        "(Repetisjoner, Sett, Lengde, TreningsøktID, ØvelseID) " +
+                        "VALUES (?,?,?,?,?)");
+    
+        pstmt.setObject(1, repetisjoner);
+        pstmt.setObject(2, sett);
+        pstmt.setObject(3, lengde);
+        pstmt.setInt(4, TreningsøktID);
+        pstmt.setInt(5, ØvelseID);
+    
+        try {
+            pstmt.executeUpdate();
+        } finally {
+            pstmt.close();
+        }
+    }
+    
+    public ResultSet GetØvelse(int ØvelseID) throws SQLException {
+        PreparedStatement pstmt = this.con.prepareStatement(
+                "SELECT * " +
+                        "FROM Øvelse " +
+                        "WHERE ØvelseID = ?");
+        
+        pstmt.setInt(1, ØvelseID);
+        
+        ResultSet out;
+        try {
+            out = pstmt.executeQuery();
+        } finally {
+            pstmt.close();
+        }
+        
+        return out;
+    }
+    public ResultSet GetAllØvelser() throws SQLException {
+        PreparedStatement pstmt = this.con.prepareStatement(
+                "SELECT * " +
+                        "FROM Øvelse ");
+        
+        ResultSet out;
+        try {
+            out = pstmt.executeQuery();
+        } finally {
+            pstmt.close();
+        }
+        
+        return out;
+    }
+    public ResultSet GetØvelseByName(String navn) throws SQLException {
+        PreparedStatement pstmt = this.con.prepareStatement(
+                "SELECT * " +
+                        "FROM Øvelse " +
+                        "WHERE Navn = ?");
+        
+        pstmt.setString(1, navn);
+        
+        ResultSet out;
+        try {
+            out = pstmt.executeQuery();
+        } finally {
+            pstmt.close();
+        }
+        
+        return out;
+    }
+    
+    
+    public void AddNotat(int treningsøktID, String notat) throws SQLException {//INSERT, UPDATE or DELETE
+        assert notat.length() <= 600;
+    
+        PreparedStatement pstmt = this.con.prepareStatement(
+                "INSERT INTO Notat " +
+                        "(TreningsøktID, Notat)" +
+                        "VALUES (?,?)");
+    
+        pstmt.setInt(1, treningsøktID);
+        pstmt.setString(2, notat);
+    
+        try {
+            pstmt.executeUpdate();
+        } finally {
+            pstmt.close();
+        }
+    }
+    public String getNotat(int TreningsøktID) throws SQLException {
+        PreparedStatement pstmt = this.con.prepareStatement(
+                "SELECT Notat " +
+                        "FROM Notat " +
+                        "WHERE TreningsøktID = ?");
+        
+        pstmt.setInt(1, TreningsøktID);
+        
+        ResultSet out;
+        try {
+            out = pstmt.executeQuery();
+        } finally {
+            pstmt.close();
+        }
+        
+        if (out.next()) {
+            return out.getString("Notat");
+        } else {
+            return "Ingen notat";
+        }
+    }
+    
+    
+    //templates:
+    public void template_update() throws SQLException {//INSERT, UPDATE or DELETE
+        PreparedStatement pstmt = this.con.prepareStatement(
+                "UPDATE tabell " +
+                        "SET attrib = ? " +
+                        "WHERE ID = ?");
+    
+        pstmt.setInt(1, 33);
+        pstmt.setInt(2, 44);
+    
+        try {
+            pstmt.executeUpdate();
+        } finally {
+            pstmt.close();
+        }
+    }
+    
+    public void template_insert() throws SQLException {//INSERT, UPDATE or DELETE
+        PreparedStatement pstmt = this.con.prepareStatement(
+                "INSERT INTO tabell " +
+                        "(par_A, par_B) " +
+                        "VALUES (?,?)");
+        
+        pstmt.setInt(1, 33);
+        pstmt.setInt(2, 44);
+        
+        try {
+            pstmt.executeUpdate();
+        } finally {
+            pstmt.close();
+        }
+    }
+    
+    public ResultSet template_select() throws SQLException {
+        PreparedStatement pstmt = this.con.prepareStatement(
+                "SELECT * " +
+                        "FROM  " +
+                        "WHERE EMPLOYEE_NUMBER = ?");
+        
+        pstmt.setInt(1, 1337);
+        
+        ResultSet out;
+        try {
+            out = pstmt.executeQuery();
+        } finally {
+            pstmt.close();
+        }
+        
+        return out;
     }
 }
