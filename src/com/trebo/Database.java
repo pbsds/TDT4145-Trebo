@@ -81,11 +81,7 @@ public class Database {
         pstmt.setInt(1, TreningsøktID);
         
         ResultSet out;
-        try {
-            out = pstmt.executeQuery();
-        } finally {
-            pstmt.close();
-        }
+        out = pstmt.executeQuery();
         
         return out;
     }
@@ -118,11 +114,7 @@ public class Database {
         pstmt.setInt(1, ØvelseID);
         
         ResultSet out;
-        try {
-            out = pstmt.executeQuery();
-        } finally {
-            pstmt.close();
-        }
+        out = pstmt.executeQuery();
         
         return out;
     }
@@ -132,11 +124,7 @@ public class Database {
                         "FROM Øvelse ");
         
         ResultSet out;
-        try {
-            out = pstmt.executeQuery();
-        } finally {
-            pstmt.close();
-        }
+        out = pstmt.executeQuery();
         
         return out;
     }
@@ -149,11 +137,7 @@ public class Database {
         pstmt.setString(1, navn);
         
         ResultSet out;
-        try {
-            out = pstmt.executeQuery();
-        } finally {
-            pstmt.close();
-        }
+        out = pstmt.executeQuery();
         
         return out;
     }
@@ -177,11 +161,7 @@ public class Database {
         pstmt.setInt(1, gruppe.ID);
         
         ResultSet out;
-        try {
-            out = pstmt.executeQuery();
-        } finally {
-            pstmt.close();
-        }
+        out = pstmt.executeQuery();
         
         GruppelisteElement e;
         while (out.next()){
@@ -212,11 +192,7 @@ public class Database {
         pstmt.setInt(1, gruppe.ID);
         
         ResultSet out;
-        try {
-            out = pstmt.executeQuery();
-        } finally {
-            pstmt.close();
-        }
+        out = pstmt.executeQuery();
     
         GruppelisteElement e;
         while (out.next()){
@@ -256,11 +232,7 @@ public class Database {
         pstmt.setInt(1, TreningsøktID);
         
         ResultSet out;
-        try {
-            out = pstmt.executeQuery();
-        } finally {
-            pstmt.close();
-        }
+        out = pstmt.executeQuery();
         
         if (out.next()) {
             return out.getString("Notat");
@@ -312,11 +284,7 @@ public class Database {
         pstmt.setInt(1, 1337);
         
         ResultSet out;
-        try {
-            out = pstmt.executeQuery();
-        } finally {
-            pstmt.close();
-        }
+        out = pstmt.executeQuery();
         
         return out;
     }
