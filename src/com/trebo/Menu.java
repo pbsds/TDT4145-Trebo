@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.*;
 
@@ -35,7 +36,19 @@ public class Menu{
             }
         }
     }
+/*
+    private int inputRange(String prompt, Integer floor, Integer ceiling) {
+        assert(!floor.equals(ceiling));
+        assert(floor != null || ceiling != null);
 
+        if (floor == null) {
+            while(true) {
+                System.out.println(prompt + " (max " + ceiling + ")> ");
+
+            }
+        }
+    }
+*/
     private Integer choicePrompt(Map<String, Integer> choiceMap) throws IOException {
         ArrayList<String> choices = new ArrayList<>();
         for(String key: choiceMap.keySet()){
@@ -70,8 +83,47 @@ public class Menu{
     }
 
 
-    private void inputVarighet() throws IOException {
-        System.out.println("Enter Varighet: ");
+    private int inputVarighet() throws IOException {
+        while(true){
+            System.out.println("Enter Varighet(0h 0m 0s)");
+            String in = reader.readLine();
+            Scanner scan = new Scanner(in);
+            int hours = 0, minutes = 0, seconds = 0;
+            boolean success = false;
+            if(scan.hasNext("\\d+[h]")){
+                String num = scan.next("\\d+[h]");
+                hours = Integer.parseInt(num.substring(0, num.length()-1));
+            }
+            if(scan.hasNext("\\d+[m]")){
+                String num = scan.next("\\d+[m]");
+                minutes = Integer.parseInt(num.substring(0, num.length()-1));
+            }
+            if(scan.hasNext("\\d+[s]")){
+                String num = scan.next("\\d+[s]");
+                seconds = Integer.parseInt(num.substring(0, num.length()-1));
+            }
+            scan.close();
+
+            if (hours != 0 || minutes != 0 || seconds != 0) {
+                if (confirmPrompt("Parsed as " + hours + "h " + minutes + "m " + seconds +
+                        "s. Is this correct?")) {
+                    return hours * 60 * 60 + minutes * 60 + seconds;
+                }
+            } else {
+                System.out.println("Please enter a valid Varighet.");
+            }
+        }
+    }
+
+    private String toVarighet(int varighet) {
+        if (varighet == 0) {
+            return "";
+        }
+        int hours = varighet / (60 * 60);
+        varighet %= 60 * 60;
+        int minutes = varighet / 60;
+        varighet %= 60;
+        return hours + "h " + minutes + "m " + varighet + "s";
     }
 
     private int searchØvelse() throws SQLException, IOException {
@@ -123,7 +175,7 @@ public class Menu{
 
     class Treningsøkt{
         public int treningsøktid;
-        public Øvelse[] øvelser;
+        public ArrayList<Øvelse> øvelser;
         //public Geodata[] geodatapunkter;
         public String tidspunkt;
         public int varighet;
@@ -134,9 +186,12 @@ public class Menu{
         public Integer måldenne;
         public Integer målneste;
 
-        Treningsøkt(){};
+        Treningsøkt(){
+            this.øvelser = new ArrayList<>();
+        };
 
         public void print(){
+            System.out.println();
             System.out.println("=Treningsøkt=");
             int i = 1;
             for (Øvelse ø: this.øvelser) {
@@ -144,11 +199,12 @@ public class Menu{
                 i++;
             }
             System.out.println("Tidspunkt: " + this.tidspunkt);
-            System.out.println("Varighet: " + this.varighet);
+            System.out.println("Varighet: " + toVarighet(this.varighet));
             System.out.println("Form: " + this.form);
             System.out.println("Prestasjon: " + this.prestasjon);
             System.out.println("Temperatur: " + this.temperatur);
             System.out.println("Værtype: " + this.værtype);
+            System.out.println();
         }
     }
 
@@ -161,8 +217,9 @@ public class Menu{
         }
         økt.tidspunkt = "Now";
         økt.print();
-
-
+        økt.varighet = this.inputVarighet();
+        økt.print();
+        //økt.prestasjon = this.inputRange();
     }
 
     /*
@@ -189,6 +246,6 @@ public class Menu{
 
     */
     public void run() throws SQLException, IOException {
-        int øvelse = this.searchØvelse();
+        this.addTreningsøktMenu();
     }
 }
