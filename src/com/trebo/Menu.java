@@ -114,9 +114,9 @@ public class Menu{
         public String navn;
         public String beskrivelse;
         public String belastning;
-        public int lengde;
-        public short repetisjoner;
-        public short sett;
+        public Integer lengde;
+        public Short repetisjoner;
+        public Short sett;
 
         Øvelse(){};
     }
@@ -129,10 +129,10 @@ public class Menu{
         public int varighet;
         public short form;
         public short prestasjon;
-        public short temperatur;
+        public Short temperatur;
         public String værtype;
-        public int måldenne;
-        public int målneste;
+        public Integer måldenne;
+        public Integer målneste;
 
         Treningsøkt(){};
 

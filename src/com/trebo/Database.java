@@ -20,10 +20,45 @@ public class Database {
     }
     
     //functions:
-    public int       addTreningsøkt(long Tidspunkt, int Varighet, int Form, short Prestasjon, Integer Temperatur, String Værtype) throws SQLException {
+    public int       addTreningsøkt(Menu.Treningsøkt Treningsøkt) throws SQLException{
+        //public Øvelse[] øvelser;
+        //public Geodata[] geodatapunkter;
+        
+        long tid;
+        if (Treningsøkt.tidspunkt == "Now"){
+            tid = System.currentTimeMillis()/1000L;
+        } else {
+            tid = 0;
+        }
+        
+        int ID = this.addTreningsøkt(
+                tid,
+                Treningsøkt.varighet,
+                Treningsøkt.form,
+                Treningsøkt.prestasjon,
+                Treningsøkt.temperatur,
+                Treningsøkt.værtype,
+                Treningsøkt.måldenne,
+                Treningsøkt.målneste
+        );
+        
+        
+        for (Menu.Øvelse ø : Treningsøkt.øvelser){
+            addØvingsgjennomføring(
+                    ø.repetisjoner,
+                    ø.sett,
+                    ø.lengde,
+                    ID,
+                    ø.øvelseid
+            );
+        }
+        
+        return ID;
+    }
+    public int       addTreningsøkt(long Tidspunkt, int Varighet, int Form, short Prestasjon, Short Temperatur, String Værtype) throws SQLException {
         return addTreningsøkt(Tidspunkt, Varighet, Form, Prestasjon, Temperatur, Værtype, null, null);
     }
-    public int       addTreningsøkt(long Tidspunkt, int Varighet, int Form, short Prestasjon, Integer Temperatur, String Værtype, Integer MålDenne, Integer MålNeste) throws SQLException {//INSERT, UPDATE or DELETE
+    public int       addTreningsøkt(long Tidspunkt, int Varighet, int Form, short Prestasjon, Short Temperatur, String Værtype, Integer MålDenne, Integer MålNeste) throws SQLException {//INSERT, UPDATE or DELETE
         assert Værtype.length() <= 20;
     
         if (MålDenne==null){
@@ -83,7 +118,7 @@ public class Database {
         return pstmt.executeQuery();
     }
     
-    public void addGeodata(int TreningsøktID, long Tid, short puls, double lengdegrad, double breddegrad, short moh) throws SQLException {//INSERT, UPDATE or DELETE
+    public void      addGeodata(int TreningsøktID, long Tid, short puls, double lengdegrad, double breddegrad, short moh) throws SQLException {//INSERT, UPDATE or DELETE
         PreparedStatement pstmt = this.con.prepareStatement(
                 "INSERT INTO Geodata " +
                         "(TreningsøktID, Tid, Puls, Lengdegrad, Breddegrad, Moh) " +
@@ -121,7 +156,7 @@ public class Database {
         return out;
     }
     
-    public void      addØvingsgjennomføring(Integer repetisjoner, Integer sett, Integer lengde, int TreningsøktID, int ØvelseID) throws SQLException {//INSERT, UPDATE or DELETE
+    public void      addØvingsgjennomføring(Short repetisjoner, Short sett, Integer lengde, int TreningsøktID, int ØvelseID) throws SQLException {//INSERT, UPDATE or DELETE
         PreparedStatement pstmt = this.con.prepareStatement(
                 "INSERT INTO Øvelsegjennomføring " +
                         "(Repetisjoner, Sett, Lengde, TreningsøktID, ØvelseID) " +
@@ -203,6 +238,11 @@ public class Database {
         public String label;
         public boolean isØvelse = false;
         public int ID;
+    }
+    public ArrayList<GruppelisteElement> getGruppeliste() throws SQLException {//inkluderer øvelser som er bed i gruppen
+        GruppelisteElement e = new GruppelisteElement();
+        e.ID = 1;//root
+        return getGruppeliste(e);
     }
     public ArrayList<GruppelisteElement> getGruppeliste(GruppelisteElement gruppe) throws SQLException {//inkluderer øvelser som er bed i gruppen
         ArrayList<GruppelisteElement> outVec = new ArrayList<GruppelisteElement>();
