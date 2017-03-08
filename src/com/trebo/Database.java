@@ -1,6 +1,6 @@
 package com.trebo;
 import java.sql.*;
-import java.util.Vector;
+import java.util.ArrayList;
 
 public class Database {
     private String address, database, username, password;
@@ -204,8 +204,8 @@ public class Database {
         public boolean isØvelse = false;
         public int ID;
     }
-    public Vector<GruppelisteElement> getGruppeliste(GruppelisteElement gruppe) throws SQLException {//inkluderer øvelser som er bed i gruppen
-        Vector<GruppelisteElement> outVec = new Vector<GruppelisteElement>();
+    public ArrayList<GruppelisteElement> getGruppeliste(GruppelisteElement gruppe) throws SQLException {//inkluderer øvelser som er bed i gruppen
+        ArrayList<GruppelisteElement> outVec = new ArrayList<GruppelisteElement>();
         if (gruppe.isØvelse){
             return outVec;
         }
@@ -235,8 +235,8 @@ public class Database {
          
         return outVec;
     }
-    public Vector<GruppelisteElement> getØvelserInGruppe(GruppelisteElement gruppe) throws SQLException {//kun øvelsene i gruppen
-        Vector<GruppelisteElement> outVec = new Vector<GruppelisteElement>();
+    public ArrayList<GruppelisteElement> getØvelserInGruppe(GruppelisteElement gruppe) throws SQLException {//kun øvelsene i gruppen
+        ArrayList<GruppelisteElement> outVec = new ArrayList<GruppelisteElement>();
         if (gruppe.isØvelse){
             return outVec;
         }
