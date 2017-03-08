@@ -10,8 +10,6 @@ public class trebo {
                 "pederbs_trebo",
                 "spismeg");
 
-
-
         /*
         try {
             db.template_update();
@@ -25,6 +23,7 @@ public class trebo {
             menu.run();
         } catch (Exception e){
             System.out.println(e);
+            System.exit(1);
         }
 
     }
