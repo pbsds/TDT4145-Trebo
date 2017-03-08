@@ -132,9 +132,9 @@ public class Database {
         PreparedStatement pstmt = this.con.prepareStatement(
                 "SELECT * " +
                         "FROM Øvelse " +
-                        "WHERE Navn = ?");
+                        "WHERE Navn LIKE ?");
         
-        pstmt.setString(1, navn);
+        pstmt.setString(1, "%" + navn + "%");
         
         ResultSet out;
         out = pstmt.executeQuery();
@@ -280,9 +280,9 @@ public class Database {
                 "SELECT * " +
                         "FROM  " +
                         "WHERE EMPLOYEE_NUMBER = ?");
-        
+
         pstmt.setInt(1, 1337);
-        
+
         ResultSet out;
         out = pstmt.executeQuery();
         
