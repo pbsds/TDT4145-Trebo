@@ -20,12 +20,22 @@ public class Database {
     }
     
     //functions:
-    public int addTreningsøkt(long Tidspunkt, int Varighet, int Form, short Prestasjon, Integer Temperatur, String Værtype) throws SQLException {
+    public int       addTreningsøkt(long Tidspunkt, int Varighet, int Form, short Prestasjon, Integer Temperatur, String Værtype) throws SQLException {
         return addTreningsøkt(Tidspunkt, Varighet, Form, Prestasjon, Temperatur, Værtype, null, null);
     }
-    public int addTreningsøkt(long Tidspunkt, int Varighet, int Form, short Prestasjon, Integer Temperatur, String Værtype, Integer MålDenne, Integer MålNeste) throws SQLException {//INSERT, UPDATE or DELETE
+    public int       addTreningsøkt(long Tidspunkt, int Varighet, int Form, short Prestasjon, Integer Temperatur, String Værtype, Integer MålDenne, Integer MålNeste) throws SQLException {//INSERT, UPDATE or DELETE
         assert Værtype.length() <= 20;
     
+        if (MålDenne==null){
+            ResultSet rs = getTreningsøkt();
+            if (rs.next()){
+                MålDenne = rs.getInt("MålDenne");
+            }
+        }
+        if (MålNeste==null){
+            MålNeste = MålDenne;
+        }
+        
         PreparedStatement pstmt = this.con.prepareStatement(
                 "INSERT INTO Treningsøkt" +
                         "(Tidspunkt, Varighet, Form, Prestasjon, Temperatur, Værtype, MålDenne, MålNeste)" +
@@ -50,6 +60,27 @@ public class Database {
             pstmt.close();
         }
         return out;
+    }
+    public ResultSet getTreningsøkt() throws SQLException{
+        return getTreningsøkt(null);
+    }
+    public ResultSet getTreningsøkt(Integer TreningsøktID) throws SQLException {
+        PreparedStatement pstmt;
+        if (TreningsøktID==null){
+             pstmt = this.con.prepareStatement(
+                    "SELECT * " +
+                            "FROM Treningsøkt " +
+                            "ORDER BY TreningsøktID DESC " +
+                            "LIMIT 1");
+        } else{
+            pstmt = this.con.prepareStatement(
+                    "SELECT * " +
+                            "FROM Treningsøkt " +
+                            "WHERE TreningsøktID = ?");
+            pstmt.setInt(1, TreningsøktID);
+        }
+        
+        return pstmt.executeQuery();
     }
     
     public void addGeodata(int TreningsøktID, long Tid, short puls, double lengdegrad, double breddegrad, short moh) throws SQLException {//INSERT, UPDATE or DELETE
@@ -90,7 +121,7 @@ public class Database {
         return out;
     }
     
-    public void addØvingsgjennomføring(Integer repetisjoner, Integer sett, Integer lengde, int TreningsøktID, int ØvelseID) throws SQLException {//INSERT, UPDATE or DELETE
+    public void      addØvingsgjennomføring(Integer repetisjoner, Integer sett, Integer lengde, int TreningsøktID, int ØvelseID) throws SQLException {//INSERT, UPDATE or DELETE
         PreparedStatement pstmt = this.con.prepareStatement(
                 "INSERT INTO Øvelsegjennomføring " +
                         "(Repetisjoner, Sett, Lengde, TreningsøktID, ØvelseID) " +
@@ -108,6 +139,16 @@ public class Database {
             pstmt.close();
         }
     }
+    public ResultSet getØvingsgjennomføringer(int TreningsøktID) throws SQLException{
+        PreparedStatement pstmt = this.con.prepareStatement(
+                "SELECT * " +
+                        "FROM Øvelsegjennomføring " +
+                        "WHERE TreningsøktID = ?");
+    
+        pstmt.setInt(1, TreningsøktID);
+    
+        return pstmt.executeQuery();
+    }
     
     public ResultSet getØvelse(int ØvelseID) throws SQLException {
         PreparedStatement pstmt = this.con.prepareStatement(
@@ -121,6 +162,18 @@ public class Database {
         out = pstmt.executeQuery();
         
         return out;
+    }
+    public ResultSet getØvelser(int TreningsøktID) throws SQLException {
+        PreparedStatement pstmt = this.con.prepareStatement(
+                "SELECT * " +
+                        "FROM Øvelse " +
+                        "WHERE Øvelse.ØvelseID in (SELECT  Øvelsegjennomføring.ØvelseID " +
+                                                    "FROM  Øvelsegjennomføring " +
+                                                    "WHERE Øvelsegjennomføring.ØvelseID = ?)");
+        
+        pstmt.setInt(1, TreningsøktID);
+        
+        return pstmt.executeQuery();
     }
     public ResultSet getAllØvelser() throws SQLException {
         PreparedStatement pstmt = this.con.prepareStatement(
@@ -210,7 +263,7 @@ public class Database {
         return outVec;
     }
     
-    public void addNotat(int treningsøktID, String notat) throws SQLException {//INSERT, UPDATE or DELETE
+    public void   addNotat(int TreningsøktID, String notat) throws SQLException {//INSERT, UPDATE or DELETE
         assert notat.length() <= 600;
     
         PreparedStatement pstmt = this.con.prepareStatement(
@@ -218,7 +271,7 @@ public class Database {
                         "(TreningsøktID, Notat)" +
                         "VALUES (?,?)");
     
-        pstmt.setInt(1, treningsøktID);
+        pstmt.setInt(1, TreningsøktID);
         pstmt.setString(2, notat);
     
         try {
@@ -244,6 +297,10 @@ public class Database {
             return "Ingen notat";
         }
     }
+    
+    //getMål
+    //get
+    //addMål
     
     
     //templates:
@@ -287,9 +344,6 @@ public class Database {
 
         pstmt.setInt(1, 1337);
 
-        ResultSet out;
-        out = pstmt.executeQuery();
-        
-        return out;
+        return pstmt.executeQuery();
     }
 }
