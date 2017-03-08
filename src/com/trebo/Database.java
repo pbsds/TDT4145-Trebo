@@ -52,7 +52,7 @@ public class Database {
         return out;
     }
     
-    public void      addGeodata(int TreningsøktID, long Tid, short puls, double lengdegrad, double breddegrad, short moh) throws SQLException {//INSERT, UPDATE or DELETE
+    public void addGeodata(int TreningsøktID, long Tid, short puls, double lengdegrad, double breddegrad, short moh) throws SQLException {//INSERT, UPDATE or DELETE
         PreparedStatement pstmt = this.con.prepareStatement(
                 "INSERT INTO Geodata " +
                         "(TreningsøktID, Tid, Puls, Lengdegrad, Breddegrad, Moh) " +
@@ -81,7 +81,11 @@ public class Database {
         pstmt.setInt(1, TreningsøktID);
         
         ResultSet out;
-        out = pstmt.executeQuery();
+        try {
+            out = pstmt.executeQuery();
+        } finally {
+            pstmt.close();
+        }
         
         return out;
     }

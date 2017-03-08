@@ -1,42 +1,43 @@
 package com.trebo;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.*;
 
 public class Menu{
     private Database db;
+    private BufferedReader reader;
 
     public Menu(Database db) {
         this.db = db;
+        this.reader = new BufferedReader(new InputStreamReader(System.in));
     }
 
-    private boolean confirmPrompt(String prompt){
-        Scanner scan = new Scanner(System.in);
+    private boolean confirmPrompt(String prompt) throws IOException{
         while(true) {
             System.out.print(prompt.concat(" [Y/n]: "));
-            String in = scan.next().toLowerCase();
+            String in = reader.readLine().trim().split(" ")[0];
             switch(in) {
                 case "":
                 case "y":
                 case "yes":
-                    scan.close();
                     return true;
                 case "n":
                 case "no":
-                    scan.close();
                     return false;
                 default:
                     System.out.println("Please enter yes or no.");
-                    scan.nextLine();
                     break;
             }
         }
     }
 
-    private Integer choicePrompt(Map<String, Integer> choiceMap){
-        Scanner scan = new Scanner(System.in);
-        Vector<String> choices = new Vector<>();
+    private Integer choicePrompt(Map<String, Integer> choiceMap) throws IOException {
+        ArrayList<String> choices = new ArrayList<>();
         for(String key: choiceMap.keySet()){
             choices.add(key);
         }
@@ -51,7 +52,7 @@ public class Menu{
         while(true) {
             System.out.print("> ");
             try {
-                int in = scan.nextInt();
+                int in = Integer.parseInt(reader.readLine().trim().split(" ")[0]);
                 if (in == 0) {
                     return -2;
                 } else if (in == 9 && choiceMap.size() == 8) {
@@ -61,45 +62,107 @@ public class Menu{
                 } else {
                     return choiceMap.get(choices.get(in - 1));
                 }
-            } catch (InputMismatchException e) {
+            } catch (NumberFormatException e) {
                 System.out.println("Please enter a valid number.");
             }
         }
 
     }
 
-    private int searchØvelse() throws SQLException {
-        Scanner scan = new Scanner(System.in);
+
+    private void inputVarighet() throws IOException {
+        System.out.println("Enter Varighet: ");
+    }
+
+    private int searchØvelse() throws SQLException, IOException {
         while(true) {
-            if (scan.hasNextLine()){scan.nextLine();}
-            String in = scan.next();
+            System.out.println("Enter the name of an Øvelse."); // oh shit, it's på norsk
+            System.out.print("> ");
+            String in = reader.readLine().trim().split(" ")[0];
             ResultSet res = db.getØvelseByName(in);
             if(!res.isBeforeFirst()){ // is empty
                 System.out.println("Could not find Øvelse with that name.");
             }
             else if(res.next() && res.isLast()){ // is length 1
-                res.beforeFirst();
                 if(this.confirmPrompt("Do you want to use " + res.getString("Navn") + "?")){
-                    scan.close();
                     return res.getInt("ØvelseID");
                 }
             } else {
-                res.previous();
+                //res.previous();
                 Map<String, Integer> øvelser = new LinkedHashMap<>(8);
                     while (!res.isAfterLast()) {
                         øvelser.put(res.getString("Navn"), res.getInt("ØvelseID"));
-                        if (øvelser.size() == 8) {
+                        res.next();
+                        if (øvelser.size() == 8 || res.isAfterLast()) {
                              int øvelse = this.choicePrompt(øvelser);
                              if(øvelse == -1) {
                                  øvelser.clear();
                              } else if(øvelse == -2) {
                                  break;
+                             } else {
+                                 return øvelse;
                              }
                         }
                     }
             }
-
+            res.close();
         }
+    }
+
+    class Øvelse{
+        public int øvelseid;
+        public String navn;
+        public String beskrivelse;
+        public String belastning;
+        public int lengde;
+        public short repetisjoner;
+        public short sett;
+
+        Øvelse(){};
+    }
+
+    class Treningsøkt{
+        public int treningsøktid;
+        public Øvelse[] øvelser;
+        //public Geodata[] geodatapunkter;
+        public String tidspunkt;
+        public int varighet;
+        public short form;
+        public short prestasjon;
+        public short temperatur;
+        public String værtype;
+        public int måldenne;
+        public int målneste;
+
+        Treningsøkt(){};
+
+        public void print(){
+            System.out.println("=Treningsøkt=");
+            int i = 1;
+            for (Øvelse ø: this.øvelser) {
+                System.out.println("Øvelse #" + i + ": " + ø.navn);
+                i++;
+            }
+            System.out.println("Tidspunkt: " + this.tidspunkt);
+            System.out.println("Varighet: " + this.varighet);
+            System.out.println("Form: " + this.form);
+            System.out.println("Prestasjon: " + this.prestasjon);
+            System.out.println("Temperatur: " + this.temperatur);
+            System.out.println("Værtype: " + this.værtype);
+        }
+    }
+
+    private void addTreningsøktMenu() throws SQLException, IOException {
+        Treningsøkt økt = new Treningsøkt();
+        System.out.println("=== Add Treningsøkt ===");
+        økt.print();
+        if (!this.confirmPrompt("Use current time for Tidspunkt?")) {
+            System.out.println("Feature not yet added. Using current time for Tidspunkt.");
+        }
+        økt.tidspunkt = "Now";
+        økt.print();
+
+
     }
 
     /*
@@ -125,7 +188,7 @@ public class Menu{
     }
 
     */
-    public void run(){
-        confirmPrompt("asdasdas");
+    public void run() throws SQLException, IOException {
+        int øvelse = this.searchØvelse();
     }
 }

@@ -19,6 +19,7 @@ public class trebo {
             //lolno
         }
         */
+
         Menu menu = new Menu(db);
         try {
             menu.run();
