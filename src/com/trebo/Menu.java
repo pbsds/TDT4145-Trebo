@@ -40,7 +40,6 @@ public class Menu{
     private Integer inputInteger() throws IOException {
         return inputInteger(false);
     }
-
     private Integer inputInteger(boolean allownull) throws IOException {
         while (true) {
             try {
@@ -58,7 +57,6 @@ public class Menu{
     private Integer inputRange(String prompt, Integer floor, Integer ceiling) throws IOException{
         return this.inputRange(prompt, floor, ceiling, false);
     }
-
     private Integer inputRange(String prompt, Integer floor, Integer ceiling, boolean allownull) throws IOException {
         assert(floor != null || ceiling != null);
         if (floor != null && ceiling != null) {
@@ -111,7 +109,6 @@ public class Menu{
     private Short inputShortRange(String prompt, Integer floor, Integer ceiling) throws IOException {
         return this.inputShortRange(prompt, floor, ceiling, false);
     }
-
     private Short inputShortRange(String prompt, Integer floor, Integer ceiling, boolean allownull) throws IOException {
         Integer in = this.inputRange(prompt, floor, ceiling, allownull);
         if (allownull && in == null) {
@@ -193,7 +190,6 @@ public class Menu{
     private ResultSet searchØvelse() throws SQLException, IOException {
         return this.searchØvelse(false);
     }
-
     private ResultSet searchØvelse(boolean allownull) throws SQLException, IOException {
         while(true) {
             System.out.print("Enter the name of an Øvelse."); // oh shit, it's på norsk

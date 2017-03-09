@@ -117,21 +117,8 @@ public class Database {
         
         return pstmt.executeQuery();
     }
-    /*
-    public ResultSet getTreningsøkterByØvelse(int ØvelseID) throws SQLException {//returns Treningsøkt and Øvelsegjennomføring joined together
-        PreparedStatement pstmt = this.con.prepareStatement(
-                    "SELECT * " +
-                            "FROM Øvelsegjennomføring AS ø " +
-                            "JOIN Treningsøkt AS t ON t.TreningsøktID = ø.TreningsøktID " +
-                            "WHERE ø.ØvelseID = ? ");
-        pstmt.setInt(1, ØvelseID);
     
-    
-        return pstmt.executeQuery();
-    }
-    */
-    
-    public void addGeodata(int TreningsøktID, long Tid, short puls, double lengdegrad, double breddegrad, short moh) throws SQLException {//INSERT, UPDATE or DELETE
+    public void      addGeodata(int TreningsøktID, long Tid, short puls, double lengdegrad, double breddegrad, short moh) throws SQLException {//INSERT, UPDATE or DELETE
         PreparedStatement pstmt = this.con.prepareStatement(
                 "INSERT INTO Geodata " +
                         "(TreningsøktID, Tid, Puls, Lengdegrad, Breddegrad, Moh) " +
@@ -169,7 +156,7 @@ public class Database {
         return out;
     }
     
-    public void addØvingsgjennomføring(Short repetisjoner, Short sett, Integer lengde, int TreningsøktID, int ØvelseID) throws SQLException {//INSERT, UPDATE or DELETE
+    public void      addØvingsgjennomføring(Short repetisjoner, Short sett, Integer lengde, int TreningsøktID, int ØvelseID) throws SQLException {//INSERT, UPDATE or DELETE
         PreparedStatement pstmt = this.con.prepareStatement(
                 "INSERT INTO Øvelsegjennomføring " +
                         "(Repetisjoner, Sett, Lengde, TreningsøktID, ØvelseID) " +
