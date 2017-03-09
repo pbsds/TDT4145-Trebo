@@ -267,8 +267,8 @@ public class Menu{
         Øvelse(int øvelseid) throws SQLException {//use the Øvelse as a template
             this(db.getØvelse(øvelseid), null);
         }
-        Øvelse(int øvelseid, int øvelsegjennomføringid) throws SQLException {//use the Øvelse as a template
-            this(db.getØvelse(øvelseid), db.getØvingsgjennomføring(øvelsegjennomføringid));
+        Øvelse(Integer øvelseid, int øvelsegjennomføringid) throws SQLException {//use the Øvelse as a template
+            this((øvelseid!=null)? db.getØvelse(øvelseid) : null, db.getØvingsgjennomføring(øvelsegjennomføringid));
         }
         Øvelse(ResultSet øvelsers, ResultSet øvelsegjennomføringrs) throws SQLException{//use the Øvelse as a template
             if (øvelsegjennomføringrs != null) {
