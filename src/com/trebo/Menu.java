@@ -36,19 +36,90 @@ public class Menu{
             }
         }
     }
-/*
-    private int inputRange(String prompt, Integer floor, Integer ceiling) {
-        assert(!floor.equals(ceiling));
-        assert(floor != null || ceiling != null);
 
-        if (floor == null) {
-            while(true) {
-                System.out.println(prompt + " (max " + ceiling + ")> ");
+    private Integer inputInteger() throws IOException {
+        return inputInteger(false);
+    }
 
+    private Integer inputInteger(boolean allownull) throws IOException {
+        while (true) {
+            try {
+                String in = reader.readLine();
+                if (allownull && in.trim().equals("")){
+                    return null;
+                }
+                return Integer.parseInt(in.trim().split(" ")[0]);
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a valid number.");
             }
         }
     }
-*/
+
+    private Integer inputRange(String prompt, Integer floor, Integer ceiling) throws IOException{
+        return this.inputRange(prompt, floor, ceiling, false);
+    }
+
+    private Integer inputRange(String prompt, Integer floor, Integer ceiling, boolean allownull) throws IOException {
+        assert(floor != null || ceiling != null);
+        if (floor != null && ceiling != null) {
+            assert(!floor.equals(ceiling));
+        }
+
+        System.out.print(prompt);
+        if (allownull) {
+            System.out.print(" (leave blank to skip)");
+        }
+        if (floor == null) {
+            System.out.println(" (max " + ceiling + ")> ");
+            while(true) {
+                Integer in = this.inputInteger(allownull);
+                if (allownull && in == null) {
+                    return null;
+                }
+                if (in <= ceiling) {
+                    return in;
+                }
+                System.out.println("Please enter a number below or equal to " + ceiling + ".");
+            }
+        } else if (ceiling == null) {
+            System.out.println(" (min " + ceiling + ")> ");
+            while(true) {
+                Integer in = this.inputInteger(allownull);
+                if (allownull && in == null) {
+                    return null;
+                }
+                if (in >= floor) {
+                    return in;
+                }
+                System.out.println("Please enter a number above or equal to " + floor + ".");
+            }
+        } else {
+            System.out.println(" (" + floor + ", " + ceiling + ")> ");
+            while(true) {
+                Integer in = this.inputInteger(allownull);
+                if (allownull && in == null) {
+                    return null;
+                }
+                if (in < floor || in > ceiling) {
+                    return in;
+                }
+                System.out.println("Please enter a number between or equal to " + floor + " and " + ceiling + ".");
+            }
+        }
+    }
+
+    private Short inputShortRange(String prompt, Integer floor, Integer ceiling) throws IOException {
+        return this.inputShortRange(prompt, floor, ceiling, false);
+    }
+
+    private Short inputShortRange(String prompt, Integer floor, Integer ceiling, boolean allownull) throws IOException {
+        Integer in = this.inputRange(prompt, floor, ceiling, allownull);
+        if (allownull && in == null) {
+            return null;
+        }
+        return in.shortValue();
+    }
+
     private Integer choicePrompt(Map<String, Integer> choiceMap) throws IOException {
         ArrayList<String> choices = new ArrayList<>();
         for(String key: choiceMap.keySet()){
@@ -64,31 +135,25 @@ public class Menu{
         System.out.println("0) Cancel search");
         while(true) {
             System.out.print("> ");
-            try {
-                int in = Integer.parseInt(reader.readLine().trim().split(" ")[0]);
-                if (in == 0) {
-                    return -2;
-                } else if (in == 9 && choiceMap.size() == 8) {
-                    return -1;
-                } else if (in < 0 || in > choices.size()) {
-                    System.out.println("Please enter a number corresponding to the above options.");
-                } else {
-                    return choiceMap.get(choices.get(in - 1));
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("Please enter a valid number.");
+            int in = this.inputInteger();
+            if (in == 0) {
+                return -2;
+            } else if (in == 9 && choiceMap.size() == 8) {
+                return -1;
+            } else if (in < 0 || in > choices.size()) {
+                System.out.println("Please enter a number corresponding to the above options.");
+            } else {
+                return choiceMap.get(choices.get(in - 1));
             }
         }
-
     }
 
     private int inputVarighet() throws IOException {
         while(true){
-            System.out.println("Enter Varighet(0h 0m 0s)");
+            System.out.println("Enter Varighet (0h 0m 0s)> ");
             String in = reader.readLine();
             Scanner scan = new Scanner(in);
             int hours = 0, minutes = 0, seconds = 0;
-            boolean success = false;
             if(scan.hasNext("\\d+[h]")){
                 String num = scan.next("\\d+[h]");
                 hours = Integer.parseInt(num.substring(0, num.length()-1));
@@ -125,18 +190,28 @@ public class Menu{
         return hours + "h " + minutes + "m " + varighet + "s";
     }
 
-    private int searchØvelse() throws SQLException, IOException {
+    private ResultSet searchØvelse() throws SQLException, IOException {
+        return this.searchØvelse(false);
+    }
+
+    private ResultSet searchØvelse(boolean allownull) throws SQLException, IOException {
         while(true) {
-            System.out.println("Enter the name of an Øvelse."); // oh shit, it's på norsk
+            System.out.print("Enter the name of an Øvelse."); // oh shit, it's på norsk
+            if (allownull) {
+                System.out.print(" (enter q to cancel)");
+            }
             System.out.print("> ");
-            String in = reader.readLine().trim().split(" ")[0];
+            String in = reader.readLine().trim().split(" ")[0].toLowerCase();
+            if (allownull && in.equals("q")) {
+                return null;
+            }
             ResultSet res = db.getØvelseByName(in);
             if(!res.isBeforeFirst()){ // is empty
                 System.out.println("Could not find Øvelse with that name.");
             }
             else if(res.next() && res.isLast()){ // is length 1
                 if(this.confirmPrompt("Do you want to use " + res.getString("Navn") + "?")){
-                    return res.getInt("ØvelseID");
+                    return res;
                 }
             } else {
                 //res.previous();
@@ -151,7 +226,9 @@ public class Menu{
                              } else if(øvelse == -2) {
                                  break;
                              } else {
-                                 return øvelse;
+                                 res = db.getØvelse(øvelse);
+                                 res.next();
+                                 return res;
                              }
                         }
                     }
@@ -168,28 +245,28 @@ public class Menu{
         public Integer lengde;
         public Short repetisjoner;
         public Short sett;
-    
-        Øvelse(){};
-        
+
+        Øvelse(){}
+
         //loads from a Øvelse row.
         // repetisjoner, lengde and sett could be overwritten if you provide a øvelsegjennomføringid
-        Øvelse(Database db, int øvelseid, Integer øvelsegjennomføringid) throws SQLException {//use the Øvelse as a template
-            this(db, db.getØvelse(øvelseid), øvelsegjennomføringid);
+        Øvelse(int øvelseid, Integer øvelsegjennomføringid) throws SQLException {//use the Øvelse as a template
+            this(db.getØvelse(øvelseid), øvelsegjennomføringid);
         }
-        Øvelse(Database db, ResultSet øvelsers, Integer øvelsegjennomføringid) throws SQLException{//use the Øvelse as a template
+        Øvelse(ResultSet øvelsers, Integer øvelsegjennomføringid) throws SQLException{//use the Øvelse as a template
             if (øvelsers.next()){
                 øvelseid = øvelsers.getInt("ØvelseID");
                 navn = øvelsers.getString("Navn");
                 beskrivelse = øvelsers.getString("Beskrivelse");
                 belastning = øvelsers.getInt("Belastning");
-                
+
                 if (øvelsegjennomføringid != null) {
                     ResultSet ørs = db.getØvingsgjennomføring(øvelsegjennomføringid);
                     if (ørs.next()) {
                         øvelsers = ørs;
                     }
                 }
-                
+
                 lengde = øvelsers.getInt("Lengde");
                 if (øvelsers.wasNull()){lengde=null;}
                 repetisjoner = øvelsers.getShort("Repetisjoner");
@@ -197,7 +274,7 @@ public class Menu{
                 sett = øvelsers.getShort("Sett");
                 if (øvelsers.wasNull()){sett=null;}
             }
-        };
+        }
     }
 
     class Treningsøkt{
@@ -214,9 +291,13 @@ public class Menu{
         public Integer målneste;
 
         Treningsøkt(){
-            øvelser = new ArrayList<Øvelse>();
-        };
-        
+            this.øvelser = new ArrayList<>();
+            this.temperatur = null;
+            this.værtype = null;
+            this.måldenne = null;
+            this.målneste = null;
+        }
+
         Treningsøkt(Database db, int treningsøktid) throws SQLException{
             ResultSet rs = db.getTreningsøkt(treningsøktid);
             if (rs.next()){
@@ -233,12 +314,11 @@ public class Menu{
                 if (rs.wasNull()){måldenne=null;}
                 målneste = rs.getInt("MålNeste");
                 if (rs.wasNull()){målneste=null;}
-    
+
                 øvelser = new ArrayList<Øvelse>();
                 ResultSet ørs = db.getØvingsgjennomføringer(treningsøktid);
                 while (rs.next()){
                     Øvelse ø = new Øvelse(
-                            db,
                             ørs.getInt("ØvelseID"),
                             ørs.getInt("ØvelsegjennomføringID")
                     );
@@ -268,15 +348,48 @@ public class Menu{
     private void addTreningsøktMenu() throws SQLException, IOException {
         Treningsøkt økt = new Treningsøkt();
         System.out.println("=== Add Treningsøkt ===");
+
         økt.print();
         if (!this.confirmPrompt("Use current time for Tidspunkt?")) {
             System.out.println("Feature not yet added. Using current time for Tidspunkt.");
         }
         økt.tidspunkt = "Now";
+
         økt.print();
+        System.out.println("How long did you train?");
         økt.varighet = this.inputVarighet();
+
         økt.print();
-        //økt.prestasjon = this.inputRange();
+        System.out.println("Were you in good shape? Higher numbers are better.");
+        økt.form = this.inputShortRange("Please enter an integer.", 0, 10);
+
+        økt.print();
+        System.out.println("How well do you feel you did? Higher numbers are better.");
+        økt.prestasjon = this.inputShortRange("Please enter an integer.", 0, 10);
+
+        økt.print();
+        System.out.println("What was the average temperature?");
+        økt.temperatur = this.inputShortRange("Please enter an integer.", (int)Short.MIN_VALUE, (int)Short.MAX_VALUE, true);
+
+        økt.print();
+        System.out.println("What was today's weather? (leave blank to skip)> ");
+        økt.værtype = reader.readLine();
+        if (økt.værtype.trim().equals("")){
+            økt.værtype = null;
+        }
+
+        økt.print();
+        System.out.println("Now it is time to add Øvelser to your session.");
+        økt.øvelser.add(new Øvelse(this.searchØvelse(), null));
+        while(true){
+            if (!this.confirmPrompt("Do you want to add another øvelse?")){
+                break;
+            }
+            ResultSet øvelse = this.searchØvelse(true);
+            if (øvelse != null) {
+                økt.øvelser.add(new Øvelse(øvelse, null));
+            }
+        }
     }
 
     /*

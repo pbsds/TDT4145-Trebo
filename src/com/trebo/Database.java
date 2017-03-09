@@ -169,7 +169,7 @@ public class Database {
         return out;
     }
     
-    public void      addØvingsgjennomføring(Short repetisjoner, Short sett, Integer lengde, int TreningsøktID, int ØvelseID) throws SQLException {//INSERT, UPDATE or DELETE
+    public void addØvingsgjennomføring(Short repetisjoner, Short sett, Integer lengde, int TreningsøktID, int ØvelseID) throws SQLException {//INSERT, UPDATE or DELETE
         PreparedStatement pstmt = this.con.prepareStatement(
                 "INSERT INTO Øvelsegjennomføring " +
                         "(Repetisjoner, Sett, Lengde, TreningsøktID, ØvelseID) " +
