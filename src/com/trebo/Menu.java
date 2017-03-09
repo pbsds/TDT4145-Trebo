@@ -21,7 +21,7 @@ public class Menu{
     private boolean confirmPrompt(String prompt) throws IOException{
         while(true) {
             System.out.print(prompt.concat(" [Y/n]: "));
-            String in = reader.readLine().trim().split(" ")[0];
+            String in = reader.readLine().trim().split(" ")[0].toLowerCase();
             switch(in) {
                 case "":
                 case "y":
@@ -81,7 +81,6 @@ public class Menu{
         }
 
     }
-
 
     private int inputVarighet() throws IOException {
         while(true){
@@ -161,16 +160,44 @@ public class Menu{
         }
     }
 
-    class Øvelse{
+    class Øvelse{//gjennomføring?
         public int øvelseid;
         public String navn;
         public String beskrivelse;
-        public String belastning;
+        public int belastning;
         public Integer lengde;
         public Short repetisjoner;
         public Short sett;
-
+    
         Øvelse(){};
+        
+        //loads from a Øvelse row.
+        // repetisjoner, lengde and sett could be overwritten if you provide a øvelsegjennomføringid
+        Øvelse(Database db, int øvelseid, Integer øvelsegjennomføringid) throws SQLException {//use the Øvelse as a template
+            this(db, db.getØvelse(øvelseid), øvelsegjennomføringid);
+        }
+        Øvelse(Database db, ResultSet øvelsers, Integer øvelsegjennomføringid) throws SQLException{//use the Øvelse as a template
+            if (øvelsers.next()){
+                øvelseid = øvelsers.getInt("ØvelseID");
+                navn = øvelsers.getString("Navn");
+                beskrivelse = øvelsers.getString("Beskrivelse");
+                belastning = øvelsers.getInt("Belastning");
+                
+                if (øvelsegjennomføringid != null) {
+                    ResultSet ørs = db.getØvingsgjennomføring(øvelsegjennomføringid);
+                    if (ørs.next()) {
+                        øvelsers = ørs;
+                    }
+                }
+                
+                lengde = øvelsers.getInt("Lengde");
+                if (øvelsers.wasNull()){lengde=null;}
+                repetisjoner = øvelsers.getShort("Repetisjoner");
+                if (øvelsers.wasNull()){repetisjoner=null;}
+                sett = øvelsers.getShort("Sett");
+                if (øvelsers.wasNull()){sett=null;}
+            }
+        };
     }
 
     class Treningsøkt{
@@ -187,8 +214,38 @@ public class Menu{
         public Integer målneste;
 
         Treningsøkt(){
-            this.øvelser = new ArrayList<>();
+            øvelser = new ArrayList<Øvelse>();
         };
+        
+        Treningsøkt(Database db, int treningsøktid) throws SQLException{
+            ResultSet rs = db.getTreningsøkt(treningsøktid);
+            if (rs.next()){
+                this.treningsøktid = treningsøktid;
+                tidspunkt = rs.getString("Tidspunkt");
+                varighet = rs.getInt("Varighet");
+                form = rs.getShort("Form");
+                prestasjon = rs.getShort("Prestasjon");
+                temperatur = rs.getShort("Temperatur");
+                if (rs.wasNull()){temperatur=null;}
+                værtype = rs.getString("Værtype");
+                if (rs.wasNull()){værtype=null;}
+                måldenne = rs.getInt("MålDenne");
+                if (rs.wasNull()){måldenne=null;}
+                målneste = rs.getInt("MålNeste");
+                if (rs.wasNull()){målneste=null;}
+    
+                øvelser = new ArrayList<Øvelse>();
+                ResultSet ørs = db.getØvingsgjennomføringer(treningsøktid);
+                while (rs.next()){
+                    Øvelse ø = new Øvelse(
+                            db,
+                            ørs.getInt("ØvelseID"),
+                            ørs.getInt("ØvelsegjennomføringID")
+                    );
+                    øvelser.add(ø);
+                }
+            }
+        }
 
         public void print(){
             System.out.println();

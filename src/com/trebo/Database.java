@@ -117,6 +117,19 @@ public class Database {
         
         return pstmt.executeQuery();
     }
+    /*
+    public ResultSet getTreningsøkterByØvelse(int ØvelseID) throws SQLException {//returns Treningsøkt and Øvelsegjennomføring joined together
+        PreparedStatement pstmt = this.con.prepareStatement(
+                    "SELECT * " +
+                            "FROM Øvelsegjennomføring AS ø " +
+                            "JOIN Treningsøkt AS t ON t.TreningsøktID = ø.TreningsøktID " +
+                            "WHERE ø.ØvelseID = ? ");
+        pstmt.setInt(1, ØvelseID);
+    
+    
+        return pstmt.executeQuery();
+    }
+    */
     
     public void      addGeodata(int TreningsøktID, long Tid, short puls, double lengdegrad, double breddegrad, short moh) throws SQLException {//INSERT, UPDATE or DELETE
         PreparedStatement pstmt = this.con.prepareStatement(
@@ -174,14 +187,24 @@ public class Database {
             pstmt.close();
         }
     }
+    public ResultSet getØvingsgjennomføring(int ØvelsegjennomføringID) throws SQLException{
+        PreparedStatement pstmt = this.con.prepareStatement(
+                "SELECT * " +
+                        "FROM Øvelsegjennomføring " +
+                        "WHERE ØvelsesgjennomføringID = ?");
+        
+        pstmt.setInt(1, ØvelsegjennomføringID);
+        
+        return pstmt.executeQuery();
+    }
     public ResultSet getØvingsgjennomføringer(int TreningsøktID) throws SQLException{
         PreparedStatement pstmt = this.con.prepareStatement(
                 "SELECT * " +
                         "FROM Øvelsegjennomføring " +
                         "WHERE TreningsøktID = ?");
-    
+        
         pstmt.setInt(1, TreningsøktID);
-    
+        
         return pstmt.executeQuery();
     }
     
