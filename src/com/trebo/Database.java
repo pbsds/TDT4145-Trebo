@@ -245,6 +245,15 @@ public class Database {
         pstmt.setInt(1, MålID);
         return pstmt.executeQuery();
     }
+    public ResultSet getØvelserRelatedToØvelse(int ØvelseID) throws SQLException {
+        PreparedStatement pstmt = this.con.prepareStatement(
+                "SELECT * " +
+                        "FROM Øvelse AS ø " +
+                        "WHERE ø.ØvelseID IN (SELECT RelatertØvelseID FROM ØvelseRelaterte AS R WHERE R.ØvelseID = ?)");
+        
+        pstmt.setInt(1, ØvelseID);
+        return pstmt.executeQuery();
+    }
     
     public class GruppelisteElement {//totally not a struct
         public String label;
