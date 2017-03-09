@@ -233,28 +233,33 @@ public class Menu{
         }
     }
 
-    private Øvelse toGjennomføring(Øvelse øvelse) throws IOException {
-        if (øvelse.lengde == null) { // Kondisjonsøvelse
-            Short in = inputShortRange("How many repetitions did you do of " + øvelse.navn +
-                    "? (default, " + øvelse.repetisjoner + ")", 1, null, true);
-            if (in != null) {
-                øvelse.repetisjoner = in;
-            }
+    private void toGjennomføringer(ArrayList<Øvelse> øvelser) throws IOException {
+        for(int i = 0; i < øvelser.size(); i++) {
+            Øvelse øvelse = øvelser.get(i);
+            if (øvelse.lengde == null) { // Kondisjonsøvelse
+                Short in = inputShortRange("How many repetitions did you do of " + øvelse.navn +
+                        "? (default, " + øvelse.repetisjoner + ")", 1, null, true);
+                if (in != null) {
+                    øvelse.repetisjoner = in;
+                }
 
-            in = inputShortRange("How many sets did you do of " + øvelse.navn +
-                    "? (default " + øvelse.sett + ")", 1, null, true);
+                in = inputShortRange("How many sets did you do of " + øvelse.navn +
+                        "? (default " + øvelse.sett + ")", 1, null, true);
 
-            if (in != null) {
-                øvelse.sett = in;
-            }
-        } else { // Utholdenhetsøvelse
-            Integer in = inputRange("What distance did you do " + øvelse.navn +
-                    " in metres? (default " + øvelse.lengde + ")", 1, null, true);
-            if (in != null) {
-                øvelse.lengde = in;
+                if (in != null) {
+                    øvelse.sett = in;
+                }
+
+                øvelser.set(i, øvelse);
+            } else { // Utholdenhetsøvelse
+                Integer in = inputRange("What distance did you do " + øvelse.navn +
+                        " in metres? (default " + øvelse.lengde + ")", 1, null, true);
+                if (in != null) {
+                    øvelse.lengde = in;
+                    øvelser.set(i, øvelse);
+                }
             }
         }
-        return øvelse;
     }
 
     class Geodata{
@@ -451,11 +456,7 @@ public class Menu{
             }
         }
 
-        for(int i = 0; i < økt.øvelser.size(); i++) {
-            økt.øvelser.set(i, this.toGjennomføring(økt.øvelser.get(i)));
-        }
-        System.out.println(økt.øvelser.get(0).lengde);
-
+        this.toGjennomføringer(økt.øvelser);
 
     }
 
