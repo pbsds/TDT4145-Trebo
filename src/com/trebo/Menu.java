@@ -268,11 +268,10 @@ public class Menu{
 
         //loads from a Øvelse row.
         // repetisjoner, lengde and sett could be overwritten if you provide a øvelsegjennomføringid
-
         Øvelse(int øvelseid) throws SQLException {//use the Øvelse as a template
             this(db.getØvelse(øvelseid), null);
         }
-        Øvelse(Database db, int øvelseid, int øvelsegjennomføringid) throws SQLException {//use the Øvelse as a template
+        Øvelse(int øvelseid, int øvelsegjennomføringid) throws SQLException {//use the Øvelse as a template
             this(db.getØvelse(øvelseid), db.getØvingsgjennomføring(øvelsegjennomføringid));
         }
         Øvelse(ResultSet øvelsers, ResultSet øvelsegjennomføringrs) throws SQLException{//use the Øvelse as a template
@@ -322,7 +321,7 @@ public class Menu{
         public Integer måldenne;
         public Integer målneste;
         public String notat;
-
+    
         Treningsøkt(){
             this.øvelser = new ArrayList<>();
             this.temperatur = null;
