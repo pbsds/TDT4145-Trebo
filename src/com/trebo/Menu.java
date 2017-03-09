@@ -237,6 +237,24 @@ public class Menu{
         }
     }
 
+    class Geodata{
+        public int geodataid;
+        public int treningsøktid;
+        public long tid;
+        public short puls;
+        public float lengdegrad;
+        public float breddegrad;
+        public short moh;
+
+        Geodata(int treningsøktid) {
+            this.treningsøktid = treningsøktid;
+        }
+
+        Geodata(int geodataid, int treningsøktid, long tid, short puls, float lengdegrad, float breddegrad, short moh){
+            //later
+        }
+    }
+
     class Øvelse{//gjennomføring?
         public int øvelseid;
         public String navn;
@@ -280,7 +298,7 @@ public class Menu{
     class Treningsøkt{
         public int treningsøktid;
         public ArrayList<Øvelse> øvelser;
-        //public Geodata[] geodatapunkter;
+        public ArrayList<Geodata> geodatapunkter;
         public String tidspunkt;
         public int varighet;
         public short form;
@@ -289,6 +307,7 @@ public class Menu{
         public String værtype;
         public Integer måldenne;
         public Integer målneste;
+        public String notat;
 
         Treningsøkt(){
             this.øvelser = new ArrayList<>();
@@ -296,9 +315,10 @@ public class Menu{
             this.værtype = null;
             this.måldenne = null;
             this.målneste = null;
+            this.notat = null;
         }
 
-        Treningsøkt(Database db, int treningsøktid) throws SQLException{
+        Treningsøkt(int treningsøktid) throws SQLException{
             ResultSet rs = db.getTreningsøkt(treningsøktid);
             if (rs.next()){
                 this.treningsøktid = treningsøktid;
@@ -324,6 +344,13 @@ public class Menu{
                     );
                     øvelser.add(ø);
                 }
+
+                this.notat = db.getNotat(this.treningsøktid);
+                if (this.notat.equals("Ingen notat")) {
+                    this.notat = null;
+                }
+
+
             }
         }
 
