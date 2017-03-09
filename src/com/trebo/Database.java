@@ -372,13 +372,13 @@ public class Database {
             pstmt.executeUpdate();
             ResultSet rs = pstmt.getGeneratedKeys();
             rs.next();
-            out = rs.getInt(1);
+            ID = rs.getInt(1);
         } finally {
             pstmt.close();
         }
         
         //add MålØvelse relations:
-        for (int ØvelseID : ØvelseIDer){
+        for (Integer ØvelseID : ØvelseIDer){
             if (ØvelseID == null){
                 continue;
             }
@@ -403,6 +403,16 @@ public class Database {
         PreparedStatement pstmt = this.con.prepareStatement(
                 "SELECT * " +
                         "FROM Mål");
+        
+        return pstmt.executeQuery();
+    }
+    public ResultSet getMål(int MålID) throws SQLException {
+        PreparedStatement pstmt = this.con.prepareStatement(
+                "SELECT * " +
+                        "FROM Mål " +
+                        "WHERE MålID = ?");
+        
+        pstmt.setInt(1, MålID);
         
         return pstmt.executeQuery();
     }
