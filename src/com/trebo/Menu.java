@@ -268,29 +268,43 @@ public class Menu{
 
         //loads from a Øvelse row.
         // repetisjoner, lengde and sett could be overwritten if you provide a øvelsegjennomføringid
-        Øvelse(int øvelseid, Integer øvelsegjennomføringid) throws SQLException {//use the Øvelse as a template
-            this(db.getØvelse(øvelseid), øvelsegjennomføringid);
-        }
-        Øvelse(ResultSet øvelsers, Integer øvelsegjennomføringid) throws SQLException{//use the Øvelse as a template
-            if (øvelsers.next()){
-                øvelseid = øvelsers.getInt("ØvelseID");
-                navn = øvelsers.getString("Navn");
-                beskrivelse = øvelsers.getString("Beskrivelse");
-                belastning = øvelsers.getInt("Belastning");
 
-                if (øvelsegjennomføringid != null) {
-                    ResultSet ørs = db.getØvingsgjennomføring(øvelsegjennomføringid);
-                    if (ørs.next()) {
-                        øvelsers = ørs;
+        Øvelse(int øvelseid) throws SQLException {//use the Øvelse as a template
+            this(db.getØvelse(øvelseid), null);
+        }
+        Øvelse(Database db, int øvelseid, int øvelsegjennomføringid) throws SQLException {//use the Øvelse as a template
+            this(db.getØvelse(øvelseid), db.getØvingsgjennomføring(øvelsegjennomføringid));
+        }
+        Øvelse(ResultSet øvelsers, ResultSet øvelsegjennomføringrs) throws SQLException{//use the Øvelse as a template
+            if (øvelsegjennomføringrs != null) {
+                if (øvelsegjennomføringrs.next()){
+                    lengde = øvelsegjennomføringrs.getInt("Lengde");
+                    if (øvelsegjennomføringrs.wasNull()){lengde=null;}
+                    repetisjoner = øvelsegjennomføringrs.getShort("Repetisjoner");
+                    if (øvelsegjennomføringrs.wasNull()){repetisjoner=null;}
+                    sett = øvelsegjennomføringrs.getShort("Sett");
+                    if (øvelsegjennomføringrs.wasNull()){sett=null;}
+                    
+                    if (øvelsers == null){
+                        øvelsers = db.getØvelse(øvelsegjennomføringrs.getInt("ØvelseID"));
                     }
                 }
-
-                lengde = øvelsers.getInt("Lengde");
-                if (øvelsers.wasNull()){lengde=null;}
-                repetisjoner = øvelsers.getShort("Repetisjoner");
-                if (øvelsers.wasNull()){repetisjoner=null;}
-                sett = øvelsers.getShort("Sett");
-                if (øvelsers.wasNull()){sett=null;}
+            }
+            if (øvelsers != null){
+                if (øvelsers.next()) {
+                    øvelseid = øvelsers.getInt("ØvelseID");
+                    navn = øvelsers.getString("Navn");
+                    beskrivelse = øvelsers.getString("Beskrivelse");
+                    belastning = øvelsers.getInt("Belastning");
+                    if (øvelsegjennomføringrs == null){
+                        lengde = øvelsers.getInt("Lengde");
+                        if (øvelsers.wasNull()){lengde=null;}
+                        repetisjoner = øvelsers.getShort("Repetisjoner");
+                        if (øvelsers.wasNull()){repetisjoner=null;}
+                        sett = øvelsers.getShort("Sett");
+                        if (øvelsers.wasNull()){sett=null;}
+                    }
+                }
             }
         }
     }
@@ -317,9 +331,10 @@ public class Menu{
             this.målneste = null;
             this.notat = null;
         }
-
-        Treningsøkt(int treningsøktid) throws SQLException{
-            ResultSet rs = db.getTreningsøkt(treningsøktid);
+        Treningsøkt(int treningsøktid) throws SQLException {
+            this(db.getTreningsøkt(treningsøktid));
+        }
+        Treningsøkt(ResultSet rs) throws SQLException{
             if (rs.next()){
                 this.treningsøktid = treningsøktid;
                 tidspunkt = rs.getString("Tidspunkt");
@@ -338,10 +353,7 @@ public class Menu{
                 øvelser = new ArrayList<Øvelse>();
                 ResultSet ørs = db.getØvingsgjennomføringer(treningsøktid);
                 while (rs.next()){
-                    Øvelse ø = new Øvelse(
-                            ørs.getInt("ØvelseID"),
-                            ørs.getInt("ØvelsegjennomføringID")
-                    );
+                    Øvelse ø = new Øvelse(null, ørs);
                     øvelser.add(ø);
                 }
 
