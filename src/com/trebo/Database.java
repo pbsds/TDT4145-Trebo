@@ -21,8 +21,7 @@ public class Database {
     
     //functions:
     public int       addTreningsøkt(Menu.Treningsøkt Treningsøkt) throws SQLException{
-        //public Øvelse[] øvelser;
-        //public Geodata[] geodatapunkter;
+        //todo: Treningsøkt.geodatapunkter
         
         long tid;
         if (Treningsøkt.tidspunkt == "Now"){
@@ -42,7 +41,6 @@ public class Database {
                 Treningsøkt.målneste
         );
         
-        
         for (Menu.Øvelse ø : Treningsøkt.øvelser){
             addØvingsgjennomføring(
                     ø.repetisjoner,
@@ -51,6 +49,10 @@ public class Database {
                     ID,
                     ø.øvelseid
             );
+        }
+        
+        if (Treningsøkt.notat!=null && Treningsøkt.notat.length() > 0){
+            addNotat(ID, Treningsøkt.notat);
         }
         
         return ID;
@@ -203,10 +205,7 @@ public class Database {
         
         pstmt.setInt(1, ØvelseID);
         
-        ResultSet out;
-        out = pstmt.executeQuery();
-        
-        return out;
+        return pstmt.executeQuery();
     }
     public ResultSet getØvelser(int TreningsøktID) throws SQLException {
         PreparedStatement pstmt = this.con.prepareStatement(
@@ -225,12 +224,9 @@ public class Database {
                 "SELECT * " +
                         "FROM Øvelse ");
         
-        ResultSet out;
-        out = pstmt.executeQuery();
-        
-        return out;
+        return pstmt.executeQuery();
     }
-    public ResultSet getØvelseByName(String navn) throws SQLException {
+    public ResultSet getØvelserByName(String navn) throws SQLException {
         PreparedStatement pstmt = this.con.prepareStatement(
                 "SELECT * " +
                         "FROM Øvelse " +
@@ -238,10 +234,16 @@ public class Database {
         
         pstmt.setString(1, "%" + navn + "%");
         
-        ResultSet out;
-        out = pstmt.executeQuery();
+        return pstmt.executeQuery();
+    }
+    public ResultSet getØvelserByMål(int MålID) throws SQLException {
+        PreparedStatement pstmt = this.con.prepareStatement(
+                "SELECT * " +
+                        "FROM Øvelse AS ø " +
+                        "WHERE ø.ØvelseID IN (SELECT m.ØvelseID FROM MålØvelse AS m WHERE MålID = ?)");
         
-        return out;
+        pstmt.setInt(1, MålID);
+        return pstmt.executeQuery();
     }
     
     public class GruppelisteElement {//totally not a struct
@@ -344,14 +346,57 @@ public class Database {
         if (out.next()) {
             return out.getString("Notat");
         } else {
-            return "Ingen notat";
+            return null;
         }
     }
     
-    //getMål
-    //get
-    //addMål
+    public int       addMål(long dato, ArrayList<Integer> ØvelseIDer) throws SQLException {//INSERT, UPDATE or DELETE
+        PreparedStatement pstmt = this.con.prepareStatement(
+                "INSERT INTO Mål " +
+                        "(Dato) " +
+                        "VALUES (?)");
+        
+        pstmt.setLong(1, dato);
     
+        int ID = -1;
+        try {
+            pstmt.executeUpdate();
+            ResultSet rs = pstmt.getGeneratedKeys();
+            rs.next();
+            out = rs.getInt(1);
+        } finally {
+            pstmt.close();
+        }
+        
+        //add MålØvelse relations:
+        for (int ØvelseID : ØvelseIDer){
+            if (ØvelseID == null){
+                continue;
+            }
+            PreparedStatement øpstmt = this.con.prepareStatement(
+                    "INSERT INTO MålØvelse " +
+                            "(MålID, ØvelseID) " +
+                            "VALUES (?,?)");
+    
+            øpstmt.setInt(1, ID);
+            øpstmt.setInt(2, ØvelseID);
+    
+            try {
+                øpstmt.executeUpdate();
+            } finally {
+                øpstmt.close();
+            }
+        }
+        
+        return ID;
+    }
+    public ResultSet getAllMåls() throws SQLException {
+        PreparedStatement pstmt = this.con.prepareStatement(
+                "SELECT * " +
+                        "FROM Mål");
+        
+        return pstmt.executeQuery();
+    }
     
     //templates:
     public void template_update() throws SQLException {//INSERT, UPDATE or DELETE

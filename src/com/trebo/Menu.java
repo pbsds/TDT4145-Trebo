@@ -201,7 +201,7 @@ public class Menu{
             if (allownull && in.equals("q")) {
                 return null;
             }
-            ResultSet res = db.getØvelseByName(in);
+            ResultSet res = db.getØvelserByName(in);
             if(!res.isBeforeFirst()){ // is empty
                 System.out.println("Could not find Øvelse with that name.");
             }
@@ -353,11 +353,6 @@ public class Menu{
                 }
 
                 this.notat = db.getNotat(this.treningsøktid);
-                if (this.notat.equals("Ingen notat")) {
-                    this.notat = null;
-                }
-
-
             }
         }
 
