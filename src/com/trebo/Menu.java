@@ -68,7 +68,7 @@ public class Menu{
             System.out.print(" (leave blank to skip)");
         }
         if (floor == null) {
-            System.out.println(" (max " + ceiling + ")> ");
+            System.out.print(" (max " + ceiling+ ")> ");
             while(true) {
                 Integer in = this.inputInteger(allownull);
                 if (allownull && in == null) {
@@ -80,7 +80,7 @@ public class Menu{
                 System.out.println("Please enter a number below or equal to " + ceiling + ".");
             }
         } else if (ceiling == null) {
-            System.out.println(" (min " + ceiling + ")> ");
+            System.out.print(" (min " + floor + ")> ");
             while(true) {
                 Integer in = this.inputInteger(allownull);
                 if (allownull && in == null) {
@@ -92,13 +92,13 @@ public class Menu{
                 System.out.println("Please enter a number above or equal to " + floor + ".");
             }
         } else {
-            System.out.println(" (" + floor + ", " + ceiling + ")> ");
+            System.out.print(" (" + floor + ", " + ceiling + ")> ");
             while(true) {
                 Integer in = this.inputInteger(allownull);
                 if (allownull && in == null) {
                     return null;
                 }
-                if (in < floor || in > ceiling) {
+                if (in >= floor && in <= ceiling) {
                     return in;
                 }
                 System.out.println("Please enter a number between or equal to " + floor + " and " + ceiling + ".");
@@ -147,7 +147,7 @@ public class Menu{
 
     private int inputVarighet() throws IOException {
         while(true){
-            System.out.println("Enter Varighet (0h 0m 0s)> ");
+            System.out.print("Enter Varighet (0h 0m 0s)> ");
             String in = reader.readLine();
             Scanner scan = new Scanner(in);
             int hours = 0, minutes = 0, seconds = 0;
@@ -192,7 +192,7 @@ public class Menu{
     }
     private ResultSet searchØvelse(boolean allownull) throws SQLException, IOException {
         while(true) {
-            System.out.print("Enter the name of an Øvelse."); // oh shit, it's på norsk
+            System.out.print("Enter the name of an Øvelse"); // oh shit, it's på norsk
             if (allownull) {
                 System.out.print(" (enter q to cancel)");
             }
@@ -231,6 +231,30 @@ public class Menu{
             }
             res.close();
         }
+    }
+
+    private Øvelse toGjennomføring(Øvelse øvelse) throws IOException {
+        if (øvelse.lengde == null) { // Kondisjonsøvelse
+            Short in = inputShortRange("How many repetitions did you do of " + øvelse.navn +
+                    "? (default, " + øvelse.repetisjoner + ")", 1, null, true);
+            if (in != null) {
+                øvelse.repetisjoner = in;
+            }
+
+            in = inputShortRange("How many sets did you do of " + øvelse.navn +
+                    "? (default " + øvelse.sett + ")", 1, null, true);
+
+            if (in != null) {
+                øvelse.sett = in;
+            }
+        } else { // Utholdenhetsøvelse
+            Integer in = inputRange("What distance did you do " + øvelse.navn +
+                    " in metres? (default " + øvelse.lengde + ")", 1, null, true);
+            if (in != null) {
+                øvelse.lengde = in;
+            }
+        }
+        return øvelse;
     }
 
     class Geodata{
@@ -286,7 +310,7 @@ public class Menu{
                 }
             }
             if (øvelsers != null){
-                if (øvelsers.next()) {
+                if (øvelsers.isFirst() || øvelsers.next()) {
                     øvelseid = øvelsers.getInt("ØvelseID");
                     navn = øvelsers.getString("Navn");
                     beskrivelse = øvelsers.getString("Beskrivelse");
@@ -415,6 +439,7 @@ public class Menu{
         økt.print();
         System.out.println("Now it is time to add Øvelser to your session.");
         økt.øvelser.add(new Øvelse(this.searchØvelse(), null));
+        økt.print();
         while(true){
             if (!this.confirmPrompt("Do you want to add another øvelse?")){
                 break;
@@ -422,8 +447,16 @@ public class Menu{
             ResultSet øvelse = this.searchØvelse(true);
             if (øvelse != null) {
                 økt.øvelser.add(new Øvelse(øvelse, null));
+                økt.print();
             }
         }
+
+        for(int i = 0; i < økt.øvelser.size(); i++) {
+            økt.øvelser.set(i, this.toGjennomføring(økt.øvelser.get(i)));
+        }
+        System.out.println(økt.øvelser.get(0).lengde);
+
+
     }
 
     /*
