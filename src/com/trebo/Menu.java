@@ -383,6 +383,16 @@ public class Menu{
 
         Geodata() {}
 
+        /*Geodata(int max_varighet) throws IOException {
+            System.out.println("Creating new geodata.");
+            System.out.println("First, enter how long into your session you took this reading.");
+            this.tid = (long) inputVarighet(max_varighet);
+            this.puls = inputShortRange("Enter pulse", 0, null, true);
+            this.lengdegrad = inputFloatRange("Enter longitude", 0f, null, true);
+            this.breddegrad = inputFloatRange("Enter latitude", 0f, null, true);
+            this.moh = inputShortRange("Enter altitude", 0, null, true);
+        }*/
+
         // Goddamnit Java
         private long getTid() {
             return this.tid;
@@ -458,6 +468,7 @@ public class Menu{
     
         Treningsøkt(){
             this.øvelser = new ArrayList<>();
+            this.geodatapunkter = new ArrayList<>();
             this.temperatur = null;
             this.værtype = null;
             this.måldenne = null;
@@ -559,9 +570,23 @@ public class Menu{
                 økt.print();
             }
         }
+        System.out.println();
         this.toGjennomføringer(økt.øvelser);
+        System.out.println();
 
-        //økt.geodatapunkter.sort(Comparator.comparing(Geodata::getTid));
+        if (confirmPrompt("Do you want to add geodata to this session?")){
+            økt.geodatapunkter.add(this.inputGeodata(økt.varighet));
+        }
+        while(true){
+            System.out.println();
+            if (!this.confirmPrompt("Do you want to add more geodata?")){
+                break;
+            }
+            økt.geodatapunkter.add(this.inputGeodata(økt.varighet));
+        }
+        økt.geodatapunkter.sort(Comparator.comparing(Geodata::getTid));
+
+
     }
 
     /*
