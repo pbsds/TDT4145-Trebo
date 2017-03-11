@@ -386,9 +386,9 @@ public class Menu{
     }
 
     class Geodata{
-        public Integer geodataid;
-        public Integer treningsøktid;
-        public Long tid;
+        public int geodataid;
+        public int treningsøktid;
+        public long tid;
         public Short puls;
         public Float lengdegrad;
         public Float breddegrad;
@@ -404,10 +404,10 @@ public class Menu{
             this.breddegrad = inputFloatRange("Enter latitude", 0f, null, true);
             this.moh = inputShortRange("Enter altitude", 0, null, true);
         }*/
-        Geodata(ResultSet rs) throws SQLException{
-            this(rs, false);
+        Geodata(ResultSet rs, long starttid) throws SQLException{
+            this(rs, false, starttid);
         }
-        Geodata(ResultSet rs, boolean callNext) throws SQLException{//reads the current row from rs after optionally calling rs.next() first.
+        Geodata(ResultSet rs, boolean callNext, long starttid) throws SQLException{//reads the current row from rs after optionally calling rs.next() first.
             if (callNext){
                 if (!rs.next()){
                     return;
@@ -418,11 +418,8 @@ public class Menu{
             //Database doesn't support inserting null, but this class apparently can hold null...
             
             geodataid = rs.getInt("GeodataID");
-            if (rs.wasNull()){geodataid=null;}
             treningsøktid = rs.getInt("TreningsøktID");
-            if (rs.wasNull()){treningsøktid=null;}
             tid = rs.getLong("Tid");
-            if (rs.wasNull()){tid=null;}
             puls = rs.getShort("Puls");
             if (rs.wasNull()){puls=null;}
             lengdegrad = rs.getFloat("Lengdegrad");
@@ -431,6 +428,8 @@ public class Menu{
             if (rs.wasNull()){breddegrad=null;}
             moh = rs.getShort("Moh");
             if (rs.wasNull()){moh=null;}
+            
+            tid -= starttid;
         }
 
         // Goddamnit Java
@@ -497,6 +496,7 @@ public class Menu{
         public ArrayList<Øvelse> øvelser;
         public ArrayList<Geodata> geodatapunkter;
         public String tidspunkt;
+        public Long tidspunkt_unix;
         public int varighet;
         public short form;
         public short prestasjon;
@@ -514,6 +514,7 @@ public class Menu{
             this.måldenne = null;
             this.målneste = null;
             this.notat = null;
+            this.tidspunkt_unix = null;
         }
         Treningsøkt(int treningsøktid) throws SQLException {
             this(db.getTreningsøkt(treningsøktid));
@@ -521,7 +522,8 @@ public class Menu{
         Treningsøkt(ResultSet rs) throws SQLException{
             if (rs.next()){
                 treningsøktid = rs.getInt("TreningsøktID");
-                tidspunkt = rs.getString("Tidspunkt");
+                tidspunkt_unix = rs.getLong("Tidspunkt");
+                tidspunkt = Database.unixToDate(tidspunkt_unix);
                 varighet = rs.getInt("Varighet");
                 form = rs.getShort("Form");
                 prestasjon = rs.getShort("Prestasjon");
@@ -544,7 +546,7 @@ public class Menu{
                 geodatapunkter = new ArrayList<>();
                 ResultSet grs = db.getGeodata(treningsøktid);
                 while (grs.next()){
-                    Geodata g = new Geodata(grs);
+                    Geodata g = new Geodata(grs, tidspunkt_unix);
                     geodatapunkter.add(g);
                 }
                 
