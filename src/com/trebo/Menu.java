@@ -382,7 +382,6 @@ public class Menu{
         public Short moh;
 
         Geodata() {}
-
         /*Geodata(int max_varighet) throws IOException {
             System.out.println("Creating new geodata.");
             System.out.println("First, enter how long into your session you took this reading.");
@@ -392,6 +391,34 @@ public class Menu{
             this.breddegrad = inputFloatRange("Enter latitude", 0f, null, true);
             this.moh = inputShortRange("Enter altitude", 0, null, true);
         }*/
+        Geodata(ResultSet rs) throws SQLException{
+            this(rs, false);
+        }
+        Geodata(ResultSet rs, boolean callNext) throws SQLException{//reads the current row from rs after optionally calling rs.next() first.
+            if (callNext){
+                if (!rs.next()){
+                    return;
+                }
+            }
+            
+            //*stupidly assumes everything can be null, although this could be bad*
+            //Database doesn't support inserting null, but this class apparently can hold null...
+            
+            geodataid = rs.getInt("GeodataID");
+            if (rs.wasNull()){geodataid=null;}
+            treningsøktid = rs.getInt("TreningsøktID");
+            if (rs.wasNull()){treningsøktid=null;}
+            tid = rs.getLong("Tid");
+            if (rs.wasNull()){tid=null;}
+            puls = rs.getShort("Puls");
+            if (rs.wasNull()){puls=null;}
+            lengdegrad = rs.getFloat("Lengdegrad");
+            if (rs.wasNull()){lengdegrad=null;}
+            breddegrad = rs.getFloat("Breddegrad");
+            if (rs.wasNull()){breddegrad=null;}
+            moh = rs.getShort("Moh");
+            if (rs.wasNull()){moh=null;}
+        }
 
         // Goddamnit Java
         private long getTid() {
@@ -480,7 +507,7 @@ public class Menu{
         }
         Treningsøkt(ResultSet rs) throws SQLException{
             if (rs.next()){
-                this.treningsøktid = treningsøktid;
+                treningsøktid = rs.getInt("TreningsøktID");
                 tidspunkt = rs.getString("Tidspunkt");
                 varighet = rs.getInt("Varighet");
                 form = rs.getShort("Form");
@@ -500,7 +527,14 @@ public class Menu{
                     Øvelse ø = new Øvelse(null, ørs);
                     øvelser.add(ø);
                 }
-
+                
+                geodatapunkter = new ArrayList<>();
+                ResultSet grs = db.getGeodata(treningsøktid);
+                while (grs.next()){
+                    Geodata g = new Geodata(grs);
+                    geodatapunkter.add(g);
+                }
+                
                 this.notat = db.getNotat(this.treningsøktid);
             }
         }

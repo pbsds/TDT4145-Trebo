@@ -21,8 +21,6 @@ public class Database {
     
     //functions:
     public int       addTreningsøkt(Menu.Treningsøkt Treningsøkt) throws SQLException{
-        //todo: Treningsøkt.geodatapunkter
-        
         long tid;
         if (Treningsøkt.tidspunkt == "Now"){
             tid = System.currentTimeMillis()/1000L - Treningsøkt.varighet;
@@ -49,6 +47,10 @@ public class Database {
                     ID,
                     ø.øvelseid
             );
+        }
+        
+        for (Menu.Geodata g : Treningsøkt.geodatapunkter){
+            addGeodata(g);
         }
         
         if (Treningsøkt.notat!=null && Treningsøkt.notat.length() > 0){
@@ -120,6 +122,16 @@ public class Database {
         return pstmt.executeQuery();
     }
     
+    public void      addGeodata(Menu.Geodata Geodata) throws SQLException{
+        addGeodata(
+                Geodata.treningsøktid,
+                Geodata.tid,
+                Geodata.puls,
+                Geodata.lengdegrad,
+                Geodata.breddegrad,
+                Geodata.moh
+        );
+    }
     public void      addGeodata(int TreningsøktID, long Tid, short puls, double lengdegrad, double breddegrad, short moh) throws SQLException {//INSERT, UPDATE or DELETE
         PreparedStatement pstmt = this.con.prepareStatement(
                 "INSERT INTO Geodata " +
