@@ -372,6 +372,19 @@ public class Menu{
         return data;
     }
 
+    private String inputNotat() throws IOException {
+        String res = "";
+        System.out.println("Enter any number of lines for your note. Enter . on a single line to finish.");
+        res += reader.readLine();
+        while(true){
+            String in = reader.readLine().trim();
+            if (in.equals(".")) {
+                return res.trim();
+            }
+            res += "\n" + in;
+        }
+    }
+
     class Geodata{
         public Integer geodataid;
         public Integer treningsøktid;
@@ -624,6 +637,13 @@ public class Menu{
         }
         økt.geodatapunkter.sort(Comparator.comparing(Geodata::getTid));
 
+        System.out.println();
+
+        if (confirmPrompt("Do you want to add a note to this session?")){
+            økt.notat = this.inputNotat();
+        }
+
+        økt.print();
     }
 
     /*

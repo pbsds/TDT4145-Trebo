@@ -242,7 +242,8 @@ public class Database {
         PreparedStatement pstmt = this.con.prepareStatement(
                 "SELECT * " +
                         "FROM Øvelse " +
-                        "WHERE Navn LIKE ?");
+                        "WHERE Navn LIKE ?" +
+                        "ORDER BY Navn");
         
         pstmt.setString(1, "%" + navn + "%");
         
