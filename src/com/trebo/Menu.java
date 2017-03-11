@@ -644,6 +644,16 @@ public class Menu{
         }
 
         økt.print();
+
+        System.out.println("Saving treningsøkt...");
+
+        db.addTreningsøkt(økt);
+
+        System.out.println("Saved.");
+    }
+
+    private void statisticsMenu() {
+
     }
 
     /*
