@@ -25,7 +25,7 @@ public class Database {
         
         long tid;
         if (Treningsøkt.tidspunkt == "Now"){
-            tid = System.currentTimeMillis()/1000L;
+            tid = System.currentTimeMillis()/1000L - Treningsøkt.varighet;
         } else {
             tid = 0;
         }
@@ -42,7 +42,7 @@ public class Database {
         );
         
         for (Menu.Øvelse ø : Treningsøkt.øvelser){
-            addØvingsgjennomføring(
+            addØvelsegjennomføring(
                     ø.repetisjoner,
                     ø.sett,
                     ø.lengde,
@@ -158,7 +158,7 @@ public class Database {
         return out;
     }
     
-    public void      addØvingsgjennomføring(Short repetisjoner, Short sett, Integer lengde, int TreningsøktID, int ØvelseID) throws SQLException {//INSERT, UPDATE or DELETE
+    public void addØvelsegjennomføring(Short repetisjoner, Short sett, Integer lengde, int TreningsøktID, int ØvelseID) throws SQLException {//INSERT, UPDATE or DELETE
         PreparedStatement pstmt = this.con.prepareStatement(
                 "INSERT INTO Øvelsegjennomføring " +
                         "(Repetisjoner, Sett, Lengde, TreningsøktID, ØvelseID) " +
@@ -176,7 +176,7 @@ public class Database {
             pstmt.close();
         }
     }
-    public ResultSet getØvingsgjennomføring(int ØvelsegjennomføringID) throws SQLException{
+    public ResultSet getØvelsegjennomføring(int ØvelsegjennomføringID) throws SQLException{
         PreparedStatement pstmt = this.con.prepareStatement(
                 "SELECT * " +
                         "FROM Øvelsegjennomføring " +

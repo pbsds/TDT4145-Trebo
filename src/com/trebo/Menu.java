@@ -416,7 +416,7 @@ public class Menu{
             this(db.getØvelse(øvelseid), null);
         }
         Øvelse(Integer øvelseid, int øvelsegjennomføringid) throws SQLException {//use the Øvelse as a template
-            this((øvelseid!=null)? db.getØvelse(øvelseid) : null, db.getØvingsgjennomføring(øvelsegjennomføringid));
+            this((øvelseid!=null)? db.getØvelse(øvelseid) : null, db.getØvelsegjennomføring(øvelsegjennomføringid));
         }
         Øvelse(ResultSet øvelsers, ResultSet øvelsegjennomføringrs) throws SQLException{//use the Øvelse as a template
             if (øvelsegjennomføringrs != null) {
@@ -519,6 +519,10 @@ public class Menu{
             System.out.println("Prestasjon: " + this.prestasjon);
             System.out.println("Temperatur: " + this.temperatur);
             System.out.println("Værtype: " + this.værtype);
+            if (this.notat != null) {
+                System.out.println("Notat:");
+                System.out.println(this.notat);
+            }
             System.out.println();
         }
     }
@@ -585,7 +589,6 @@ public class Menu{
             økt.geodatapunkter.add(this.inputGeodata(økt.varighet));
         }
         økt.geodatapunkter.sort(Comparator.comparing(Geodata::getTid));
-
 
     }
 
