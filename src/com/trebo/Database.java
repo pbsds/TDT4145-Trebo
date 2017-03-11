@@ -1,6 +1,8 @@
 package com.trebo;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class Database {
     private String address, database, username, password;
@@ -22,10 +24,14 @@ public class Database {
     //functions:
     public int       addTreningsøkt(Menu.Treningsøkt Treningsøkt) throws SQLException{
         long tid;
-        if (Treningsøkt.tidspunkt == "Now"){
-            tid = System.currentTimeMillis()/1000L - Treningsøkt.varighet;
-        } else {
-            tid = 0;
+        if (Treningsøkt.tidspunkt_unix == null) {
+            if (Treningsøkt.tidspunkt.equals("Now")) {
+                tid = System.currentTimeMillis() / 1000L - Treningsøkt.varighet;
+            } else {
+                tid = 0;//dunnolol
+            }
+        } else{
+            tid = Treningsøkt.tidspunkt_unix;
         }
         
         int ID = this.addTreningsøkt(
@@ -50,7 +56,7 @@ public class Database {
         }
         
         for (Menu.Geodata g : Treningsøkt.geodatapunkter){
-            addGeodata(g);
+            addGeodata(g, tid);
         }
         
         if (Treningsøkt.notat!=null && Treningsøkt.notat.length() > 0){
@@ -68,7 +74,7 @@ public class Database {
         if (MålDenne==null){
             ResultSet rs = getTreningsøkt();
             if (rs.next()){
-                MålDenne = rs.getInt("MålDenne");
+                MålDenne = rs.getInt("MålNeste");
             }
         }
         if (MålNeste==null){
@@ -122,17 +128,17 @@ public class Database {
         return pstmt.executeQuery();
     }
     
-    public void      addGeodata(Menu.Geodata Geodata) throws SQLException{
+    public void      addGeodata(Menu.Geodata Geodata, long startTid) throws SQLException{
         addGeodata(
                 Geodata.treningsøktid,
-                Geodata.tid,
+                Geodata.tid + startTid,
                 Geodata.puls,
                 Geodata.lengdegrad,
                 Geodata.breddegrad,
                 Geodata.moh
         );
     }
-    public void      addGeodata(int TreningsøktID, long Tid, short puls, double lengdegrad, double breddegrad, short moh) throws SQLException {//INSERT, UPDATE or DELETE
+    public void      addGeodata(int TreningsøktID, long Tid, Short puls, Float lengdegrad, Float breddegrad, Short moh) throws SQLException {//INSERT, UPDATE or DELETE
         PreparedStatement pstmt = this.con.prepareStatement(
                 "INSERT INTO Geodata " +
                         "(TreningsøktID, Tid, Puls, Lengdegrad, Breddegrad, Moh) " +
@@ -140,10 +146,10 @@ public class Database {
         
         pstmt.setInt(1, TreningsøktID);
         pstmt.setLong(2, Tid);
-        pstmt.setShort(3, puls);
-        pstmt.setDouble(4, lengdegrad);
-        pstmt.setDouble(5, breddegrad);
-        pstmt.setShort(6, moh);
+        pstmt.setObject(3, puls);
+        pstmt.setObject(4, lengdegrad);
+        pstmt.setObject(5, breddegrad);
+        pstmt.setObject(6, moh);
         
         try {
             pstmt.executeUpdate();
@@ -287,7 +293,8 @@ public class Database {
         PreparedStatement pstmt = this.con.prepareStatement(
                 "SELECT *" +
                         "FROM Gruppe " +
-                        "WHERE GruppeID in (SELECT UndergruppeID FROM GruppeSubgruppe WHERE GruppeID = ?)");
+                        "WHERE GruppeID in (SELECT UndergruppeID FROM GruppeSubgruppe WHERE GruppeID = ?)" +
+                        "ORDER BY Navn DESC");
         
         pstmt.setInt(1, gruppe.ID);
         
@@ -318,7 +325,8 @@ public class Database {
         PreparedStatement pstmt = this.con.prepareStatement(
                 "SELECT *" +
                         "FROM Øvelse " +
-                        "WHERE ØvelseID in (SELECT ØvelseID FROM ØvelseGruppe WHERE GruppeID = ?)");
+                        "WHERE ØvelseID in (SELECT ØvelseID FROM ØvelseGruppe WHERE GruppeID = ?) " +
+                        "ORDER BY Navn DESC");
         
         pstmt.setInt(1, gruppe.ID);
         
@@ -428,6 +436,12 @@ public class Database {
         pstmt.setInt(1, MålID);
         
         return pstmt.executeQuery();
+    }
+    
+    //helpers:
+    public static String unixToDate(Long unix_timestamp) {
+        SimpleDateFormat sdf = new SimpleDateFormat("MMMM d, yyyy 'at' h:mm a");
+        return sdf.format(unix_timestamp*1000);
     }
     
     //templates:
