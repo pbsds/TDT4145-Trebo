@@ -54,6 +54,23 @@ public class Menu{
         }
     }
 
+    private Float inputFloat() throws IOException {
+        return inputFloat(false);
+    }
+    private Float inputFloat(boolean allownull) throws IOException {
+        while (true) {
+            try {
+                String in = reader.readLine();
+                if (allownull && in.trim().equals("")){
+                    return null;
+                }
+                return Float.parseFloat(in.trim().split(" ")[0]);
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a valid number.");
+            }
+        }
+    }
+
     private Integer inputRange(String prompt, Integer floor, Integer ceiling) throws IOException{
         return this.inputRange(prompt, floor, ceiling, false);
     }
@@ -117,6 +134,59 @@ public class Menu{
         return in.shortValue();
     }
 
+    private Float inputFloatRange(String prompt, Float floor, Float ceiling) throws IOException{
+        return this.inputFloatRange(prompt, floor, ceiling, false);
+    }
+    private Float inputFloatRange(String prompt, Float floor, Float ceiling, boolean allownull) throws IOException {
+        assert(floor != null || ceiling != null);
+        if (floor != null && ceiling != null) {
+            assert(!floor.equals(ceiling));
+        }
+
+        System.out.print(prompt);
+        if (allownull) {
+            System.out.print(" (leave blank to skip)");
+        }
+        if (floor == null) {
+            System.out.print(" (max " + ceiling+ ")> ");
+            while(true) {
+                Float in = this.inputFloat(allownull);
+                if (allownull && in == null) {
+                    return null;
+                }
+                if (in <= ceiling) {
+                    return in;
+                }
+                System.out.println("Please enter a number below or equal to " + ceiling + ".");
+            }
+        } else if (ceiling == null) {
+            System.out.print(" (min " + floor + ")> ");
+            while(true) {
+                Float in = this.inputFloat(allownull);
+                if (allownull && in == null) {
+                    return null;
+                }
+                if (in >= floor) {
+                    return in;
+                }
+                System.out.println("Please enter a number above or equal to " + floor + ".");
+            }
+        } else {
+            System.out.print(" (" + floor + ", " + ceiling + ")> ");
+            while(true) {
+                Float in = this.inputFloat(allownull);
+                if (allownull && in == null) {
+                    return null;
+                }
+                if (in >= floor && in <= ceiling) {
+                    return in;
+                }
+                System.out.println("Please enter a number between or equal to " + floor + " and " + ceiling + ".");
+            }
+        }
+    }
+
+
     private Integer choicePrompt(Map<String, Integer> choiceMap) throws IOException {
         ArrayList<String> choices = new ArrayList<>();
         for(String key: choiceMap.keySet()){
@@ -144,31 +214,59 @@ public class Menu{
             }
         }
     }
-
     private int inputVarighet() throws IOException {
+        return inputVarighet(0);
+    }
+
+    private int inputVarighet(int limit) throws IOException {
         while(true){
-            System.out.print("Enter Varighet (0h 0m 0s)> ");
+            if (limit != 0) {
+                System.out.print("Enter Varighet (max " + toVarighet(limit) + ")> ");
+            } else {
+                System.out.print("Enter Varighet (0h 0m 0s)> ");
+            }
+
             String in = reader.readLine();
             Scanner scan = new Scanner(in);
             int hours = 0, minutes = 0, seconds = 0;
             if(scan.hasNext("\\d+[h]")){
                 String num = scan.next("\\d+[h]");
                 hours = Integer.parseInt(num.substring(0, num.length()-1));
+                if (hours < 0) {
+                    System.out.println("Please enter a valid Varighet.");
+                    scan.close();
+                    continue;
+                }
             }
             if(scan.hasNext("\\d+[m]")){
                 String num = scan.next("\\d+[m]");
                 minutes = Integer.parseInt(num.substring(0, num.length()-1));
+                if (minutes < 0) {
+                    System.out.println("Please enter a valid Varighet.");
+                    scan.close();
+                    continue;
+                }
+
             }
             if(scan.hasNext("\\d+[s]")){
                 String num = scan.next("\\d+[s]");
                 seconds = Integer.parseInt(num.substring(0, num.length()-1));
+                if (seconds < 0) {
+                    System.out.println("Please enter a valid Varighet.");
+                    scan.close();
+                    continue;
+                }
             }
             scan.close();
 
-            if (hours != 0 || minutes != 0 || seconds != 0) {
-                if (confirmPrompt("Parsed as " + hours + "h " + minutes + "m " + seconds +
-                        "s. Is this correct?")) {
-                    return hours * 60 * 60 + minutes * 60 + seconds;
+            if (hours + minutes + seconds > 0) {
+                int time = hours * 60 * 60 + minutes * 60 + seconds;
+                if (limit == 0 || time <= limit) {
+                    if (confirmPrompt("Parsed as " + this.toVarighet(time) + ". Is this correct?")) {
+                        return time;
+                    }
+                } else {
+                        System.out.println("Please enter a Varighet below " + this.toVarighet(limit) + ".");
                 }
             } else {
                 System.out.println("Please enter a valid Varighet.");
@@ -262,21 +360,32 @@ public class Menu{
         }
     }
 
+    private Geodata inputGeodata(int max_varighet) throws IOException{
+        Geodata data = new Geodata();
+        System.out.println("Creating new geodata.");
+        System.out.println("First, enter how long into your session you took this reading.");
+        data.tid = (long) inputVarighet(max_varighet);
+        data.puls = inputShortRange("Enter pulse", 0, null, true);
+        data.lengdegrad = inputFloatRange("Enter longitude", 0f, null, true);
+        data.breddegrad = inputFloatRange("Enter latitude", 0f, null, true);
+        data.moh = inputShortRange("Enter altitude", 0, null, true);
+        return data;
+    }
+
     class Geodata{
-        public int geodataid;
-        public int treningsøktid;
-        public long tid;
-        public short puls;
-        public float lengdegrad;
-        public float breddegrad;
-        public short moh;
+        public Integer geodataid;
+        public Integer treningsøktid;
+        public Long tid;
+        public Short puls;
+        public Float lengdegrad;
+        public Float breddegrad;
+        public Short moh;
 
-        Geodata(int treningsøktid) {
-            this.treningsøktid = treningsøktid;
-        }
+        Geodata() {}
 
-        Geodata(int geodataid, int treningsøktid, long tid, short puls, float lengdegrad, float breddegrad, short moh){
-            //later
+        // Goddamnit Java
+        private long getTid() {
+            return this.tid;
         }
     }
 
@@ -450,9 +559,9 @@ public class Menu{
                 økt.print();
             }
         }
-
         this.toGjennomføringer(økt.øvelser);
 
+        //økt.geodatapunkter.sort(Comparator.comparing(Geodata::getTid));
     }
 
     /*
