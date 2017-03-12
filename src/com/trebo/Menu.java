@@ -537,7 +537,7 @@ public class Menu{
                 if (rs.wasNull()){målneste=null;}
 
                 øvelser = new ArrayList<Øvelse>();
-                ResultSet ørs = db.getØvingsgjennomføringer(treningsøktid);
+                ResultSet ørs = db.getØvelsegjennomføringer(treningsøktid);
                 while (rs.next()){
                     Øvelse ø = new Øvelse(null, ørs);
                     øvelser.add(ø);
@@ -632,7 +632,7 @@ public class Menu{
         }
         while(true){
             System.out.println();
-            if (!this.confirmPrompt("Do you want to add more geodata?")){
+            if (økt.geodatapunkter.isEmpty() || !this.confirmPrompt("Do you want to add more geodata?")){
                 break;
             }
             økt.geodatapunkter.add(this.inputGeodata(økt.varighet));
@@ -652,6 +652,34 @@ public class Menu{
         db.addTreningsøkt(økt);
 
         System.out.println("Saved.");
+    }
+
+    private void bestMenu() throws IOException, SQLException {
+        System.out.println("How long do you want to look back?");
+        long in = inputInteger();
+        ResultSet cond = db.getBestKondisØvelsegjennomføringer(in);
+        ResultSet end = db.getBestUtholdenhetØvelsegjennomføringer(in);
+        if (cond.next()){
+            System.out.println("Best Kondisøvelse: " + cond.getString("navn"));
+            System.out.println(String.format("Did %d sets with %s repetitions.",
+                    cond.getShort("sett") + cond.getShort("diffsett"),
+                    cond.getShort("rep") + cond.getShort("diffrep")));
+            System.out.println(String.format("This is %d more sets and %d more repetitions than required!",
+                    cond.getShort("diffsett"),
+                    cond.getShort("diffrep")));
+        } else {
+            System.out.println("No Kondisøvelses performed in time period.");
+
+        }
+        if (end.next()){
+            System.out.println("Best Utholdenhetsøvelse: " + cond.getString("navn"));
+            System.out.println(String.format("Performed for %d metres.",
+                    cond.getShort("len") + cond.getShort("difflen")));
+            System.out.println(String.format("This is %d farther than required!",
+                    cond.getShort("difflen")));
+        } else {
+            System.out.println("No Utholdenhetsøvelse performed in time period.");
+        }
     }
 
     private void statisticsMenu() {

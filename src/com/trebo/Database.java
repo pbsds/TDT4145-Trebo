@@ -204,7 +204,7 @@ public class Database {
         
         return pstmt.executeQuery();
     }
-    public ResultSet getØvingsgjennomføringer(int TreningsøktID) throws SQLException{
+    public ResultSet getØvelsegjennomføringer(int TreningsøktID) throws SQLException{
         PreparedStatement pstmt = this.con.prepareStatement(
                 "SELECT * " +
                         "FROM Øvelsegjennomføring " +
@@ -214,7 +214,72 @@ public class Database {
         
         return pstmt.executeQuery();
     }
-    
+
+    public ResultSet getBestKondisØvelsegjennomføringer(long time) throws SQLException {
+        PreparedStatement pstmt;
+        if (time > 0) {
+            pstmt = this.con.prepareStatement(
+                    "SELECT ø.navn, ø.repetisjoner AS rep, ø.sett," +
+                            "øg.repetisjoner - ø.repetisjoner AS diffrep, øg.sett - ø.sett AS diffsett " +
+                            "FROM Øvelsegjennomføring as øg " +
+                            "JOIN Øvelse as ø ON ø.ØvelseID = øg.ØvelseID " +
+                            "JOIN Treningsøkt as t ON ø.TreningsøktID = t.TreningsøktID " +
+                            "WHERE ø.lengde = NULL " +
+                            "HAVING ? - t.tid > ? " +
+                            "ORDER BY sett, rep DESC " +
+                            "LIMIT 1"
+            );
+
+            pstmt.setLong(1, System.currentTimeMillis() / 1000L);
+            pstmt.setLong(2, time);
+        } else {
+            pstmt = this.con.prepareStatement(
+                    "SELECT ø.navn, ø.repetisjoner AS rep, ø.sett, " +
+                            "øg.repetisjoner - ø.repetisjoner AS diffrep, øg.sett - ø.sett AS diffsett " +
+                            "FROM Øvelsegjennomføring as øg " +
+                            "JOIN Øvelse as ø ON ø.ØvelseID = øg.ØvelseID " +
+                            "WHERE ø.lengde = NULL " +
+                            "ORDER BY sett, rep DESC " +
+                            "LIMIT 1 "
+            );
+        }
+
+        return pstmt.executeQuery();
+    }
+
+    public ResultSet getBestUtholdenhetØvelsegjennomføringer(long time) throws SQLException {
+        PreparedStatement pstmt;
+        if (time > 0) {
+            pstmt = this.con.prepareStatement(
+                    "SELECT ø.navn, ø.lengde AS len, " +
+                            "øg.lengde - ø.lengde AS difflen " +
+                            "FROM Øvelsegjennomføring as øg " +
+                            "JOIN Øvelse as ø ON ø.ØvelseID = øg.ØvelseID " +
+                            "JOIN Treningsøkt as t ON øg.TreningsøktID = t.TreningsøktID " +
+                            "WHERE ø.sett = NULL " +
+                            "HAVING ? - t.tid > ? " +
+                            "ORDER BY len DESC " +
+                            "LIMIT 1"
+            );
+
+            pstmt.setLong(1, System.currentTimeMillis() / 1000L);
+            pstmt.setLong(2, time);
+        } else {
+            pstmt = this.con.prepareStatement(
+                    "SELECT ø.navn, ø.lengde AS len, " +
+                            "øg.lengde - ø.lengde AS difflen " +
+                            "FROM Øvelsegjennomføring as øg " +
+                            "JOIN Øvelse as ø ON ø.ØvelseID = øg.ØvelseID " +
+                            "JOIN Treningsøkt as t ON øg.TreningsøktID = t.TreningsøktID " +
+                            "WHERE ø.sett = NULL " +
+                            "ORDER BY len DESC " +
+                            "LIMIT 1"
+            );
+        }
+
+        return pstmt.executeQuery();
+    }
+
     public ResultSet getØvelse(int ØvelseID) throws SQLException {
         PreparedStatement pstmt = this.con.prepareStatement(
                 "SELECT * " +
