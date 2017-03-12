@@ -226,7 +226,7 @@ public class Menu{
                 System.out.print("Enter Varighet (0h 0m 0s)> ");
             }
 
-            String in = reader.readLine();
+            String in = reader.readLine().trim().toLowerCase();
             Scanner scan = new Scanner(in);
             int hours = 0, minutes = 0, seconds = 0;
             if(scan.hasNext("\\d+[h]")){
@@ -328,6 +328,27 @@ public class Menu{
                     }
             }
             res.close();
+        }
+    }
+
+    private long timePrompt() throws IOException {
+        while (true) {
+            System.out.println("1) Last Day");
+            System.out.println("2) Last Week");
+            System.out.println("3) Last Month");
+            System.out.println("4) All-time");
+
+            int in = inputRange("", 1, 4);
+            switch(in){
+                case 1:
+                    return 60*60*24;
+                case 2:
+                    return 7*60*60*24;
+                case 3:
+                    return 31*60*60*24;
+                case 4:
+                    return 0;
+            }
         }
     }
 
@@ -656,11 +677,13 @@ public class Menu{
 
     private void bestMenu() throws IOException, SQLException {
         System.out.println("How long do you want to look back?");
-        long in = inputInteger();
+        long in = timePrompt();
         ResultSet cond = db.getBestKondisØvelsegjennomføringer(in);
         ResultSet end = db.getBestUtholdenhetØvelsegjennomføringer(in);
+        System.out.println();
         if (cond.next()){
             System.out.println("Best Kondisøvelse: " + cond.getString("navn"));
+            System.out.println("Dato: " + db.unixToDate(cond.getLong("tidspunkt")));
             System.out.println(String.format("Did %d sets with %s repetitions.",
                     cond.getShort("sett") + cond.getShort("diffsett"),
                     cond.getShort("rep") + cond.getShort("diffrep")));
@@ -669,20 +692,37 @@ public class Menu{
                     cond.getShort("diffrep")));
         } else {
             System.out.println("No Kondisøvelses performed in time period.");
-
         }
+        System.out.println();
         if (end.next()){
-            System.out.println("Best Utholdenhetsøvelse: " + cond.getString("navn"));
+            System.out.println("Best Utholdenhetsøvelse: " + end.getString("navn"));
+            System.out.println("Dato: " + db.unixToDate(end.getLong("tidspunkt")));
             System.out.println(String.format("Performed for %d metres.",
-                    cond.getShort("len") + cond.getShort("difflen")));
+                    end.getShort("len") + end.getShort("difflen")));
             System.out.println(String.format("This is %d farther than required!",
-                    cond.getShort("difflen")));
+                    end.getShort("difflen")));
         } else {
             System.out.println("No Utholdenhetsøvelse performed in time period.");
         }
     }
 
-    private void statisticsMenu() {
+    private void statisticsMenu() throws IOException, SQLException {
+        System.out.println("How long do you want to look back?");
+        long in = timePrompt();
+        ResultSet stats = db.getStatistics(in);
+        System.out.println();
+        while(stats.next()){
+            System.out.println("=" + stats.getString("navn") + "=");
+            System.out.println("Done " + stats.getInt("cnt") + " times.");
+            Integer len = stats.getInt("avglen");
+            if (stats.wasNull()){
+                System.out.println("On average, done " + stats.getInt("avgrep") + " more repetitions than recommended.");
+                System.out.println("On average, done " + stats.getInt("avgsett") + " more sets than recommended.");
+            } else {
+                System.out.println("On average, done " + stats.getInt("avglen") + " metres further than recommended.");
+            }
+            System.out.println();
+        }
 
     }
 
@@ -710,6 +750,6 @@ public class Menu{
 
     */
     public void run() throws SQLException, IOException {
-        this.addTreningsøktMenu();
+        this.statisticsMenu();
     }
 }

@@ -85,7 +85,7 @@ public class Database {
         PreparedStatement pstmt = this.con.prepareStatement(
                 "INSERT INTO Treningsøkt" +
                         "(Tidspunkt, Varighet, Form, Prestasjon, Temperatur, Værtype, MålDenne, MålNeste)" +
-                        "VALUES (?,?,?,?,?,?,?,?)");
+                        "VALUES (?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
     
         pstmt.setLong(1, Tidspunkt);
         pstmt.setInt(2, Varighet);
@@ -220,13 +220,13 @@ public class Database {
         PreparedStatement pstmt;
         if (time > 0) {
             pstmt = this.con.prepareStatement(
-                    "SELECT ø.navn, ø.repetisjoner AS rep, ø.sett," +
+                    "SELECT ø.navn, t.tidspunkt, ø.repetisjoner AS rep, ø.sett," +
                             "øg.repetisjoner - ø.repetisjoner AS diffrep, øg.sett - ø.sett AS diffsett " +
                             "FROM Øvelsegjennomføring as øg " +
                             "JOIN Øvelse as ø ON ø.ØvelseID = øg.ØvelseID " +
-                            "JOIN Treningsøkt as t ON ø.TreningsøktID = t.TreningsøktID " +
-                            "WHERE ø.lengde = NULL " +
-                            "HAVING ? - t.tid > ? " +
+                            "JOIN Treningsøkt as t ON øg.TreningsøktID = t.TreningsøktID " +
+                            "WHERE ø.lengde IS NULL " +
+                            "HAVING ? - t.tidspunkt < ? " +
                             "ORDER BY sett, rep DESC " +
                             "LIMIT 1"
             );
@@ -235,13 +235,14 @@ public class Database {
             pstmt.setLong(2, time);
         } else {
             pstmt = this.con.prepareStatement(
-                    "SELECT ø.navn, ø.repetisjoner AS rep, ø.sett, " +
+                    "SELECT ø.navn, t.tidspunkt, ø.repetisjoner AS rep, ø.sett, " +
                             "øg.repetisjoner - ø.repetisjoner AS diffrep, øg.sett - ø.sett AS diffsett " +
                             "FROM Øvelsegjennomføring as øg " +
                             "JOIN Øvelse as ø ON ø.ØvelseID = øg.ØvelseID " +
-                            "WHERE ø.lengde = NULL " +
+                            "JOIN Treningsøkt as t ON øg.TreningsøktID = t.TreningsøktID " +
+                            "WHERE ø.lengde IS NULL " +
                             "ORDER BY sett, rep DESC " +
-                            "LIMIT 1 "
+                            "LIMIT 1"
             );
         }
 
@@ -252,13 +253,13 @@ public class Database {
         PreparedStatement pstmt;
         if (time > 0) {
             pstmt = this.con.prepareStatement(
-                    "SELECT ø.navn, ø.lengde AS len, " +
+                    "SELECT ø.navn, t.tidspunkt, ø.lengde AS len, " +
                             "øg.lengde - ø.lengde AS difflen " +
                             "FROM Øvelsegjennomføring as øg " +
                             "JOIN Øvelse as ø ON ø.ØvelseID = øg.ØvelseID " +
                             "JOIN Treningsøkt as t ON øg.TreningsøktID = t.TreningsøktID " +
-                            "WHERE ø.sett = NULL " +
-                            "HAVING ? - t.tid > ? " +
+                            "WHERE ø.sett IS NULL " +
+                            "HAVING ? - t.tidspunkt < ? " +
                             "ORDER BY len DESC " +
                             "LIMIT 1"
             );
@@ -267,12 +268,12 @@ public class Database {
             pstmt.setLong(2, time);
         } else {
             pstmt = this.con.prepareStatement(
-                    "SELECT ø.navn, ø.lengde AS len, " +
+                    "SELECT ø.navn, t.tidspunkt, ø.lengde AS len, " +
                             "øg.lengde - ø.lengde AS difflen " +
                             "FROM Øvelsegjennomføring as øg " +
                             "JOIN Øvelse as ø ON ø.ØvelseID = øg.ØvelseID " +
                             "JOIN Treningsøkt as t ON øg.TreningsøktID = t.TreningsøktID " +
-                            "WHERE ø.sett = NULL " +
+                            "WHERE ø.sett IS NULL " +
                             "ORDER BY len DESC " +
                             "LIMIT 1"
             );
@@ -501,6 +502,29 @@ public class Database {
         
         pstmt.setInt(1, MålID);
         
+        return pstmt.executeQuery();
+    }
+
+    public ResultSet getStatistics(long timeframe) throws SQLException {
+        if (timeframe == 0){
+            timeframe = Long.MAX_VALUE;
+        }
+        PreparedStatement pstmt = this.con.prepareStatement(
+                "SELECT ø.navn, COUNT(*) AS cnt, " +
+                        "AVG(øg.repetisjoner - ø.repetisjoner) AS avgrep, " +
+                        "AVG(øg.sett - ø.sett) AS avgsett, " +
+                        "AVG(øg.lengde - ø.lengde) AS avglen " +
+                        "FROM Øvelse AS ø " +
+                        "JOIN Øvelsegjennomføring AS øg ON ø.ØvelseID = øg.ØvelseID " +
+                        "JOIN Treningsøkt AS t ON øg.TreningsøktID = t.TreningsøktID " +
+                        "WHERE ? - t.tidspunkt < ? " +
+                        "GROUP BY ø.ØvelseID"
+
+
+        );
+
+        pstmt.setLong(1, System.currentTimeMillis() / 1000L);
+        pstmt.setLong(2, timeframe);
         return pstmt.executeQuery();
     }
     
