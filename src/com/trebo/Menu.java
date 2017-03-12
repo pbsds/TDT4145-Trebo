@@ -750,6 +750,31 @@ public class Menu{
 
     */
     public void run() throws SQLException, IOException {
-        this.statisticsMenu();
+        System.out.println("===================================================");
+        System.out.println("Welcome to your training diary!");
+        System.out.println("===================================================");
+        System.out.println();
+        while(true){
+            System.out.println("1) Add new training session");
+            System.out.println("2) Check your best performance");
+            System.out.println("3) Check past statistics");
+            System.out.println("4) Quit");
+            int in = inputRange("", 1, 4);
+            System.out.println();
+
+            switch(in){
+                case 1:
+                    this.addTreningsøktMenu();
+                    break;
+                case 2:
+                    this.bestMenu();
+                    break;
+                case 3:
+                    this.statisticsMenu();
+                    break;
+                case 4:
+                    System.exit(0);
+            }
+        }
     }
 }
