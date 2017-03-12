@@ -22,10 +22,9 @@ public class trebo {
         try {
             menu.run();
         } catch (Exception e){
+            e.printStackTrace();
             System.out.println(e);
             System.exit(1);
         }
-
     }
-
 }

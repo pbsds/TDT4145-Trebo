@@ -538,7 +538,7 @@ public class Menu{
 
                 øvelser = new ArrayList<Øvelse>();
                 ResultSet ørs = db.getØvelsegjennomføringer(treningsøktid);
-                while (rs.next()){
+                while (ørs.next()){
                     Øvelse ø = new Øvelse(null, ørs);
                     øvelser.add(ø);
                 }

@@ -2,7 +2,6 @@ package com.trebo;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Locale;
 
 public class Database {
     private String address, database, username, password;
@@ -18,6 +17,8 @@ public class Database {
             System.out.println("Couldn't connect to server: " + this.address);
             System.out.println(e);
             System.exit(1);
+        } finally{
+            System.out.println("Successfully connected to the database.");
         }
     }
     
