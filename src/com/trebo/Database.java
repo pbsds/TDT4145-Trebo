@@ -76,6 +76,9 @@ public class Database {
             ResultSet rs = getTreningsøkt();
             if (rs.next()){
                 MålDenne = rs.getInt("MålNeste");
+                if (rs.wasNull()){
+                    MålDenne = null;
+                }
             }
         }
         if (MålNeste==null){
@@ -95,7 +98,7 @@ public class Database {
         pstmt.setString(6, Værtype);
         pstmt.setObject(7, MålDenne);
         pstmt.setObject(8, MålNeste);
-    
+        
         int out = -1;
         try {
             pstmt.executeUpdate();
@@ -227,7 +230,7 @@ public class Database {
                             "JOIN Treningsøkt as t ON øg.TreningsøktID = t.TreningsøktID " +
                             "WHERE ø.lengde IS NULL " +
                             "HAVING ? - t.tidspunkt < ? " +
-                            "ORDER BY sett, rep DESC " +
+                            "ORDER BY diffsett DESC, diffrep DESC " +
                             "LIMIT 1"
             );
 
@@ -241,7 +244,7 @@ public class Database {
                             "JOIN Øvelse as ø ON ø.ØvelseID = øg.ØvelseID " +
                             "JOIN Treningsøkt as t ON øg.TreningsøktID = t.TreningsøktID " +
                             "WHERE ø.lengde IS NULL " +
-                            "ORDER BY sett, rep DESC " +
+                            "ORDER BY diffsett DESC, diffrep DESC " +
                             "LIMIT 1"
             );
         }
@@ -260,7 +263,7 @@ public class Database {
                             "JOIN Treningsøkt as t ON øg.TreningsøktID = t.TreningsøktID " +
                             "WHERE ø.sett IS NULL " +
                             "HAVING ? - t.tidspunkt < ? " +
-                            "ORDER BY len DESC " +
+                            "ORDER BY difflen DESC, len DESC " +
                             "LIMIT 1"
             );
 
@@ -274,7 +277,7 @@ public class Database {
                             "JOIN Øvelse as ø ON ø.ØvelseID = øg.ØvelseID " +
                             "JOIN Treningsøkt as t ON øg.TreningsøktID = t.TreningsøktID " +
                             "WHERE ø.sett IS NULL " +
-                            "ORDER BY len DESC " +
+                            "ORDER BY difflen DESC, len DESC " +
                             "LIMIT 1"
             );
         }

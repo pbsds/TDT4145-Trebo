@@ -621,7 +621,7 @@ public class Menu{
 
         økt.print();
         System.out.println("What was the average temperature?");
-        økt.temperatur = this.inputShortRange("Please enter an integer.", (int)Short.MIN_VALUE, (int)Short.MAX_VALUE, true);
+        økt.temperatur = this.inputShortRange("Please enter an integer.", -273, (int)Short.MAX_VALUE, true);
 
         økt.print();
         System.out.println("What was today's weather? (leave blank to skip)> ");
