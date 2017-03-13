@@ -17,8 +17,6 @@ public class Database {
             System.out.println("Couldn't connect to server: " + this.address);
             System.out.println(e);
             System.exit(1);
-        } finally{
-            System.out.println("Successfully connected to the database.");
         }
     }
     
