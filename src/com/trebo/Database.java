@@ -55,9 +55,13 @@ public class Database {
                     ø.øvelseid
             );
         }
-        
+
+        int i = 0;
         for (Menu.Geodata g : Treningsøkt.geodatapunkter){
+            g.geodataid = i;
+            g.treningsøktid = ID;
             addGeodata(g, tid);
+            i++;
         }
         
         if (Treningsøkt.notat!=null && Treningsøkt.notat.length() > 0){
@@ -134,6 +138,7 @@ public class Database {
     
     public void      addGeodata(Menu.Geodata Geodata, long startTid) throws SQLException{
         addGeodata(
+                Geodata.geodataid,
                 Geodata.treningsøktid,
                 Geodata.tid + startTid,
                 Geodata.puls,
@@ -142,7 +147,7 @@ public class Database {
                 Geodata.moh
         );
     }
-    public void      addGeodata(int TreningsøktID, long Tid, Short puls, Float lengdegrad, Float breddegrad, Short moh) throws SQLException {//INSERT, UPDATE or DELETE
+    public void      addGeodata(int GeodataID, int TreningsøktID, long Tid, Short puls, Float lengdegrad, Float breddegrad, Short moh) throws SQLException {//INSERT, UPDATE or DELETE
         PreparedStatement pstmt = this.con.prepareStatement(
                 "INSERT INTO Geodata " +
                         "(TreningsøktID, Tid, Puls, Lengdegrad, Breddegrad, Moh) " +
